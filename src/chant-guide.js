@@ -9,12 +9,10 @@
 export const CHANT_VERSIONS = {
   jp: {
     label: "日本版",
-    shortLabel: "日本",
     source: "日本版應援標記"
   },
   kr: {
     label: "韓國版",
-    shortLabel: "韓國",
     source: "韓國版應援標記"
   }
 };

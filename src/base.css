@@ -509,6 +509,45 @@
     background:var(--ui-accent,var(--gold));
     color:var(--ui-bg,var(--ink));
   }
+  .chant-source-details{
+    max-width:640px;
+    margin:14px auto 0;
+    border:1px solid var(--page-line,var(--line));
+    border-radius:12px;
+    background:var(--page-paper,var(--surface));
+    text-align:left;
+  }
+  .chant-source-details summary{
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    gap:10px;
+    padding:11px 14px;
+    color:var(--page-ink,var(--cream));
+    font-size:12px;
+    font-weight:700;
+    cursor:pointer;
+    list-style:none;
+  }
+  .chant-source-details summary::-webkit-details-marker{display:none;}
+  .chant-source-details summary::after{
+    content:"＋";
+    color:var(--page-muted,var(--muted));
+    font-size:15px;
+    line-height:1;
+  }
+  .chant-source-details[open] summary::after{ content:"－"; }
+  .chant-source-details .chant-source-info{
+    margin:0;
+    padding:0 14px 12px;
+    border-top:1px solid var(--page-line,var(--line));
+    color:var(--page-muted,var(--muted));
+    font-size:11.5px;
+    line-height:1.6;
+  }
+  .chant-source-details .chant-source-info a{
+    color:inherit;
+  }
   .chant-differences{
     max-width:640px;
     margin:0 auto 28px;

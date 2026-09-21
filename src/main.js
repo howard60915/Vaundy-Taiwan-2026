@@ -73,6 +73,7 @@ let showJapanese = store("horo-show-japanese") !== "0";
 let showChinese = store("horo-show-chinese") !== "0";
 const storedChantVersion = store("horo-chant-version");
 let chantVersion = storedChantVersion === "kr" ? "kr" : DEFAULT_CHANT_VERSION;
+const CHANT_VERSION_FLAGS = "🇯🇵 🇰🇷";
 // 卡拉OK 預設關閉；若使用者曾手動選擇，則沿用保存的設定。
 let karaokeEnabled = store("horo-karaoke") === "1";
 let lastActiveIdx = -1;
@@ -93,7 +94,7 @@ const SYNC_INTERVAL_MS   = 100;
 /* 지금 폰에 깔려 있는 화면이 몇 번째 판인지 알려 주는 표시.
    새로 올렸는데 화면이 그대로일 때, 옛 판이 남아 있는지 바로 확인할 수 있다.
    sw.js 의 CACHE_VERSION 과 같이 올려 주세요. */
-const BUILD = "v1.8.0";
+const BUILD = "v1.8.1";
 
 const REPO_URL = "https://github.com/watain666/Vaundy-Taiwan-2026";
 const FEEDBACK_URL = "https://www.threads.com/@brainginger/post/DdiLWztgen9";
@@ -214,6 +215,13 @@ function chantVersionLabel(version = chantVersion){
   return CHANT_VERSIONS[version]?.label || CHANT_VERSIONS.jp.label;
 }
 
+function chantSourceInfoHtml(){
+  return `<span class="chant-source-info">
+    <b>應援版本說明</b>：預設為日本版，可在歌詞上方切換日本版／韓國版；切換後大合唱標記會同步更新。<br>
+    <a href="${CHANT_REFERENCE_URL}" target="_blank" rel="noopener">日本版參考：Canva《VAUNDY 應援教學》↗</a>
+  </span>`;
+}
+
 function applyChantVersionUi(){
   document.querySelectorAll("[data-chant-version]").forEach(button => {
     const active = button.dataset.chantVersion === chantVersion;
@@ -230,7 +238,7 @@ function applyChantVersionUi(){
     compact.setAttribute("aria-pressed", isKorea ? "true" : "false");
     compact.setAttribute("aria-label", `切換應援版本：目前${chantVersionLabel()}，點擊切換`);
     const value = compact.querySelector(".chant-version-value");
-    if (value) value.textContent = CHANT_VERSIONS[chantVersion].shortLabel;
+    if (value) value.textContent = CHANT_VERSION_FLAGS;
   }
 }
 
@@ -1093,6 +1101,10 @@ function renderGuide(){
           <p class="song-legend-note">數字代表目前應援版本的大合唱歌詞行數。<br>切換歌曲時會依目前排序移動。<br>拍手・揮手提示會顯示在歌曲頁面。</p>
           ${chantVersionControlHtml("guide")}
         </div>
+        <details class="chant-source-details">
+          <summary>應援版本說明 <span aria-hidden="true">${CHANT_VERSION_FLAGS}</span></summary>
+          ${chantSourceInfoHtml()}
+        </details>
         <section class="chant-differences" aria-labelledby="chant-differences-title">
           <div class="chant-differences-head">
             <h2 id="chant-differences-title">日本版／韓國版差異</h2>
@@ -1933,10 +1945,7 @@ function buildSongShell(){
                 <span class="karaoke-source-status" id="karaoke-source-status" role="status" aria-live="polite">
                   <span id="karaoke-source-status-text"></span>
                   <span class="lyrics-credit" id="lyrics-credit" hidden></span>
-                  <span class="chant-source-info">
-                    <b>應援版本說明</b>：預設為日本版，可在歌詞上方切換日本版／韓國版；切換後大合唱標記會同步更新。<br>
-                    <a href="${CHANT_REFERENCE_URL}" target="_blank" rel="noopener">日本版參考：Canva《VAUNDY 應援教學》↗</a>
-                  </span>
+                  ${chantSourceInfoHtml()}
                 </span>
               </details>
               <div class="video-status" id="video-status" role="status">正在載入影片…</div>
@@ -1990,8 +1999,8 @@ function buildSongShell(){
           <span class="venue-label">只聽大合唱</span>
         </button>
         <button class="venue-toggle chant-version-toggle" id="chant-version-btn" aria-pressed="false" aria-label="切換應援版本">
-          <span class="venue-label">應援</span>
-          <span class="chant-version-value">${CHANT_VERSIONS[chantVersion].shortLabel}</span>
+          <span class="venue-label">應援版本</span>
+          <span class="chant-version-value">${CHANT_VERSION_FLAGS}</span>
         </button>
         <button class="venue-toggle" id="venue-btn" aria-label="開啟／關閉簡潔模式">
           <span class="venue-label">簡潔模式</span>
@@ -2505,7 +2514,6 @@ function renderSong(song){
           <span class="lyric-jp" lang="ja">${renderJapaneseLine(l.jp || "")}</span>
           <span class="lyric-romaji" lang="ja-Latn">${readingMode === "both" ? renderRomajiLine(l.jp || "", false) : ""}</span>
           <span class="lyric-zh">${withIcons(l.tr || "")}</span>
-          ${l.bg ? `<span class="lyric-bg">${renderKo(l.bg)}</span>` : ""}
         </span>
       </button>
     </li>`).join("");
@@ -3011,7 +3019,7 @@ function lyricPartText(value){
 
 function hasDisplayedLyricText(line){
   if (!line) return false;
-  return [line.jp, line.tr, line.bg].some(value =>
+  return [line.jp, line.tr].some(value =>
     lyricPartText(value).replace(ICON_TOKEN_RE, "").replace(/\s/gu, "").length > 0
   );
 }
@@ -3315,21 +3323,10 @@ function hasIconToken(str, name){
   return new RegExp(`[\\[(]${name}[\\])]`, "i").test(str);
 }
 
-function renderKo(ko){
-  if (!ko) return "";
-  if (typeof ko === "string") return withIcons(ko);
-  return ko.map(seg => {
-    const cls = seg.tag === "chant" ? "seg-chant"
-              : seg.tag === "clap"  ? "seg-clap"
-              : "";
-    return `<span class="${cls}">${withIcons(seg.text || "")}</span>`;
-  }).join("");
-}
-
-// 한 줄의 ko / bg 조각들을 훑어서 박수·동작 아이콘과 현재 선택한
+// 한 줄의 ko 조각들을 훑어서 박수·동작 아이콘과 현재 선택한
 // 응원 버전의 대합창 아이콘을 만들어 줍니다.
 function lyricIconsHtml(line, song = currentSong){
-  const ko = line.ko, bg = line.bg;
+  const ko = line.ko;
   const hasChant = lineIsChant(line, song);
   let hasClap = false, wave = false;
   const scan = (arr) => {
@@ -3351,9 +3348,6 @@ function lyricIconsHtml(line, song = currentSong){
     if (hasIconToken(t, "wave")) wave = true;
     if (hasIconToken(t, "clap")) hasClap = true;
   });
-  if (bg){
-    scan(bg);
-  }
   let html = "";
   // 박수·손 흔들기는 가사 안에 넣는 [clap] / [wave] 아이콘으로만 표시하고
   // 왼쪽 종류 표시에는 떼창만 남긴다.
@@ -3363,7 +3357,6 @@ function lyricIconsHtml(line, song = currentSong){
 
 function lineIsChantKr(line){
   if (!line) return false;
-  if (line.bg) return true;
   const hit = (part)=>{
     if (typeof part === "string")
       return hasIconToken(part, "mic") || hasIconToken(part, "chant");
@@ -3388,7 +3381,7 @@ function lineIsChantJp(line, song){
    곡 목록 배지(songMarks)와 똑같다 — 기준이 갈리면 배지에는 떼창이
    있다고 뜨는데 재생은 건너뛰는 일이 생기므로 여기 한 곳에 모아 둔다.
      · 日本版：使用 JP_CHANT_GUIDES 的歌詞時間點
-     · 韓國版：沿用 ko/jp/tr 的 [mic]、[chant]、tag:"chant" 與 bg */
+     · 韓國版：沿用 ko/jp/tr 的 [mic]、[chant]、tag:"chant" */
 function lineIsChant(line, song = currentSong){
   return chantVersion === "jp"
     ? lineIsChantJp(line, song)
@@ -3465,8 +3458,6 @@ function songMarks(song){
     scanPart(line.ko);
     scanText(line.jp);
     scanText(line.tr);
-    if (line.bg) scanPart(line.bg);   // 背景和聲仍保留動作圖示
-
     // 판단 기준은 lineIsChant 한 곳에서만 (떼창만 듣기와 어긋나지 않도록)
     if (lineIsChant(line, song)) mark.chant++;
   });
