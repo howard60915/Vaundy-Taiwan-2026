@@ -685,7 +685,7 @@ function renderHome(){
 
         <nav class="main-menu">
           <button class="menu-btn" id="guide-btn">
-            <span class="menu-btn-label">應援指南</span>
+            <span class="menu-btn-label">應援指南 無劇透</span>
           </button>
         </nav>
 
@@ -1140,7 +1140,7 @@ function renderGuide(){
 
       <section class="songs-section">
         <div class="songs-head">
-          <h1>應援指南</h1>
+          <h1>應援指南 無劇透</h1>
           <p>選擇歌曲，搭配影片查看歌詞與大合唱重點</p>
           <div class="song-legend">
             <span class="legend-item"><span class="legend-icon chant">${INLINE_ICONS.mic}</span>大合唱 <b class="legend-num">12</b> 行</span>
