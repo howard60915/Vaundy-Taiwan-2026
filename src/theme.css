@@ -595,6 +595,21 @@ button{touch-action:manipulation;}
   filter:drop-shadow(rgba(245,148,44,.45) 0 0 6px);
 }
 .song-page .lyric-line.is-chant .lyric-jp rt{color:rgba(245,210,145,.9);}
+.song-page .lyric-line.has-chant-segment .lyric-jp .chant-segment,
+.song-page .lyric-line.has-chant-segment .lyric-romaji .chant-segment,
+.song-page .lyric-line.has-chant-segment .lyric-jp .chant-segment .karaoke-unit,
+.song-page .lyric-line.has-chant-segment .lyric-romaji .chant-segment .karaoke-unit{
+  color:var(--chant);
+}
+.song-page .lyric-line.has-chant-segment .lyric-jp .chant-segment rt{color:rgba(245,210,145,.9);}
+.song-page .lyric-line.active.has-chant-segment .lyric-jp .chant-segment .karaoke-unit.karaoke-lit,
+.song-page .lyric-line.active.has-chant-segment .lyric-romaji .chant-segment .karaoke-unit.karaoke-lit{
+  color:var(--chant);
+}
+.song-page .lyric-line.active.has-chant-segment .lyric-jp .chant-segment .karaoke-unit.karaoke-current,
+.song-page .lyric-line.active.has-chant-segment .lyric-romaji .chant-segment .karaoke-unit.karaoke-current{
+  text-shadow:0 0 7px rgba(245,148,44,.55);
+}
 .song-page .watch-on-yt,
 .song-page .lyrics-note,
 .song-page .legend-item{color:var(--ui-muted);}

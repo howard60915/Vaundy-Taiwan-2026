@@ -94,7 +94,7 @@ const SYNC_INTERVAL_MS   = 100;
 /* 지금 폰에 깔려 있는 화면이 몇 번째 판인지 알려 주는 표시.
    새로 올렸는데 화면이 그대로일 때, 옛 판이 남아 있는지 바로 확인할 수 있다.
    sw.js 의 CACHE_VERSION 과 같이 올려 주세요. */
-const BUILD = "v1.8.1";
+const BUILD = "v1.8.2";
 
 const REPO_URL = "https://github.com/watain666/Vaundy-Taiwan-2026";
 const FEEDBACK_URL = "https://www.threads.com/@brainginger/post/DdiLWztgen9";
@@ -2278,7 +2278,9 @@ function repaintChantVersionLines(song = currentSong){
     const index = Number(line.dataset.idx);
     const lyric = song.lyrics[index];
     if (!lyric) return;
-    line.classList.toggle("is-chant", lineIsChant(lyric, song));
+    const chantClass = chantLineClass(lyric, song);
+    line.classList.toggle("is-chant", chantClass === "is-chant");
+    line.classList.toggle("has-chant-segment", chantClass === "has-chant-segment");
     const icons = line.querySelector(".lyric-icons");
     if (icons) icons.innerHTML = lyricIconsHtml(lyric, song);
   });
@@ -2524,11 +2526,11 @@ function renderSong(song){
 
   document.getElementById("lyrics-list").innerHTML = song.lyrics.map((l,i)=>`
     <li>
-      <button class="lyric-line${lineIsChant(l, song) ? " is-chant" : ""}" data-time="${l.time}" data-idx="${i}">
+      <button class="lyric-line ${chantLineClass(l, song)}" data-time="${l.time}" data-idx="${i}">
         <span class="lyric-icons">${lyricIconsHtml(l, song)}</span>
         <span class="lyric-body">
-          <span class="lyric-jp" lang="ja">${renderJapaneseLine(l.jp || "")}</span>
-          <span class="lyric-romaji" lang="ja-Latn">${readingMode === "both" ? renderRomajiLine(l.jp || "", false) : ""}</span>
+          <span class="lyric-jp" lang="ja">${renderJapaneseLyricLine(l, song)}</span>
+          <span class="lyric-romaji" lang="ja-Latn">${readingMode === "both" ? renderRomajiLyricLine(l, song) : ""}</span>
           <span class="lyric-zh">${withIcons(l.tr || "")}</span>
         </span>
       </button>
@@ -2705,10 +2707,10 @@ function repaintJapaneseReadings(){
     const target = line.querySelector(".lyric-jp");
     const romajiTarget = line.querySelector(".lyric-romaji");
     if (!lyric || !target) return;
-    target.innerHTML = renderJapaneseLine(lyric.jp || "");
+    target.innerHTML = renderJapaneseLyricLine(lyric, currentSong);
     if (romajiTarget){
       romajiTarget.innerHTML = readingMode === "both"
-        ? renderRomajiLine(lyric.jp || "", false)
+        ? renderRomajiLyricLine(lyric, currentSong)
         : "";
     }
     decorateKaraokeLine(target);
@@ -2955,6 +2957,113 @@ function readingModeLabel(mode = readingMode){
 
 function renderJapaneseLine(str){
   return readingMode === "romaji" ? renderRomajiLine(str) : renderKanaLine(str);
+}
+
+/* 日本版有些應援只落在一句歌詞中的幾個字（例如「愛して」），不能
+   直接把整列套上 .is-chant。先把完整歌詞轉成既有的假名／羅馬字
+   HTML，再在對應的可見文字節點外包一層標記，這樣不會丟掉 ruby 讀音。 */
+function jpChantSegmentsForLine(line, song = currentSong){
+  if (chantVersion !== "jp" || !line || !song) return [];
+  const guide = JP_CHANT_GUIDES[song.id];
+  if (!guide || !Array.isArray(guide.chantSegments)) return [];
+  const time = Number(line.time);
+  if (!Number.isFinite(time)) return [];
+  return guide.chantSegments.filter(segment =>
+    segment && Math.abs(Number(segment.time) - time) < 0.01 && segment.text
+  );
+}
+
+function chantSegmentText(segment, mode = "jp"){
+  if (!segment) return "";
+  return String(mode === "romaji" ? (segment.romaji || segment.text) : segment.text || "");
+}
+
+function wrapChantMarkup(markup, target){
+  const value = String(markup || "");
+  const needle = String(target || "");
+  if (!needle || !value || typeof document === "undefined") return value;
+
+  const template = document.createElement("template");
+  template.innerHTML = value;
+  const entries = [];
+  const visit = (node, hidden = false) => {
+    if (node.nodeType === Node.TEXT_NODE){
+      if (!hidden){
+        Array.from(node.nodeValue || "").forEach((char, offset) => {
+          entries.push({ node, char, offset });
+        });
+      }
+      return;
+    }
+    if (node.nodeType !== Node.ELEMENT_NODE && node.nodeType !== Node.DOCUMENT_FRAGMENT_NODE) return;
+    const element = node.nodeType === Node.ELEMENT_NODE ? node : null;
+    const nextHidden = hidden || Boolean(element && (
+      element.tagName === "RT" || element.tagName === "RP" || element.classList.contains("ico")
+    ));
+    [...node.childNodes].forEach(child => visit(child, nextHidden));
+  };
+  visit(template.content);
+
+  const visible = entries.map(entry => entry.char).join("");
+  const start = visible.indexOf(needle);
+  if (start < 0) return value;
+
+  const selected = entries.slice(start, start + Array.from(needle).length);
+  if (selected.length !== Array.from(needle).length) return value;
+
+  const grouped = new Map();
+  selected.forEach(entry => {
+    if (!grouped.has(entry.node)) grouped.set(entry.node, []);
+    grouped.get(entry.node).push(entry.offset);
+  });
+
+  [...grouped.entries()].reverse().forEach(([node, offsets]) => {
+    if (!node.parentNode) return;
+    const first = Math.min(...offsets);
+    const last = Math.max(...offsets) + 1;
+    const parent = node.parentNode;
+    const ruby = parent.nodeType === Node.ELEMENT_NODE && parent.tagName === "RUBY"
+      && first === 0 && last === (node.nodeValue || "").length
+      ? parent
+      : null;
+    const span = document.createElement("span");
+    span.className = "chant-segment";
+
+    if (ruby){
+      ruby.parentNode.insertBefore(span, ruby);
+      span.appendChild(ruby);
+      return;
+    }
+
+    let selectedNode = node;
+    if (first > 0) selectedNode = node.splitText(first);
+    if (last - first < (selectedNode.nodeValue || "").length){
+      selectedNode.splitText(last - first);
+    }
+    selectedNode.parentNode.insertBefore(span, selectedNode);
+    span.appendChild(selectedNode);
+  });
+
+  return template.innerHTML;
+}
+
+function renderChantAwareLine(str, line, song, render, mode){
+  let markup = render(str);
+  jpChantSegmentsForLine(line, song).forEach(segment => {
+    markup = wrapChantMarkup(markup, chantSegmentText(segment, mode));
+  });
+  return markup;
+}
+
+function renderJapaneseLyricLine(line, song = currentSong){
+  const source = line && line.jp || "";
+  const mode = readingMode === "romaji" ? "romaji" : "jp";
+  return renderChantAwareLine(source, line, song, text => renderJapaneseLine(text), mode);
+}
+
+function renderRomajiLyricLine(line, song = currentSong){
+  const source = line && line.jp || "";
+  return renderChantAwareLine(source, line, song, text => renderRomajiLine(text, false), "romaji");
 }
 
 /*
@@ -3390,7 +3499,25 @@ function lineIsChantJp(line, song){
   // Canva 沒有整理到的歌曲，先沿用原有標記，但在畫面上明確說明。
   if (!guide) return lineIsChantKr(line);
   const time = Number(line.time);
-  return Number.isFinite(time) && guide.chantTimes.some(mark => Math.abs(Number(mark) - time) < 0.01);
+  if (!Number.isFinite(time)) return false;
+  const fullLine = Array.isArray(guide.chantTimes)
+    && guide.chantTimes.some(mark => Math.abs(Number(mark) - time) < 0.01);
+  const partialLine = Array.isArray(guide.chantSegments)
+    && guide.chantSegments.some(segment => segment && Math.abs(Number(segment.time) - time) < 0.01);
+  return fullLine || partialLine;
+}
+
+function lineIsFullChantJp(line, song){
+  const guide = song && JP_CHANT_GUIDES[song.id];
+  const time = Number(line && line.time);
+  return Boolean(guide && Number.isFinite(time) && Array.isArray(guide.chantTimes)
+    && guide.chantTimes.some(mark => Math.abs(Number(mark) - time) < 0.01));
+}
+
+function chantLineClass(line, song = currentSong){
+  if (!lineIsChant(line, song)) return "";
+  const partial = chantVersion === "jp" && jpChantSegmentsForLine(line, song).length > 0;
+  return partial && !lineIsFullChantJp(line, song) ? "has-chant-segment" : "is-chant";
 }
 
 /* ── 떼창 구간 ───────────────────────────────────────────────

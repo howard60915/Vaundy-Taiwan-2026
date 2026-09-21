@@ -107,10 +107,15 @@ export const JP_CHANT_GUIDES = {
   },
   HadakaNoYusha: {
     notes: [
-      "兩句「愛して」是全場安靜跟唱，不需要用力喊。",
-      "前奏一下可以盡情拍手；這首歌的燈光也很值得看。"
+      "三次「愛して」只唱這三個字；後面的歌詞不需要整段跟唱。",
+      "「それは涙と対になって」與「そこは涙と対になって」請整段一起唱。"
     ],
-    chantTimes: [34.5, 152]
+    chantTimes: [82, 94],
+    chantSegments: [
+      { time: 34.5, text: "愛して", romaji: "aishi te" },
+      { time: 105,  text: "愛して", romaji: "aishi te" },
+      { time: 152,  text: "愛して", romaji: "aishi te" }
+    ]
   },
   "Iseijin'": {
     notes: [

@@ -1884,8 +1884,8 @@
   }
 
   /* 켜져 있는 동안 떼창이 아닌 줄은 뒤로 물러나 있게 */
-  .song-page.chant-only .lyric-line:not(.is-chant){ opacity:.3; }
-  .song-page.chant-only .lyric-line:not(.is-chant).active{ opacity:.6; }
+  .song-page.chant-only .lyric-line:not(.is-chant):not(.has-chant-segment){ opacity:.3; }
+  .song-page.chant-only .lyric-line:not(.is-chant):not(.has-chant-segment).active{ opacity:.6; }
 
   /* ── 앱 안내 배너 (새 버전 / 오프라인 / 홈 화면 추가) ───────── */
   .app-banner{
