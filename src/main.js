@@ -95,7 +95,7 @@ const SYNC_INTERVAL_MS   = 100;
 /* 지금 폰에 깔려 있는 화면이 몇 번째 판인지 알려 주는 표시.
    새로 올렸는데 화면이 그대로일 때, 옛 판이 남아 있는지 바로 확인할 수 있다.
    sw.js 의 CACHE_VERSION 과 같이 올려 주세요. */
-const BUILD = "v1.8.13";
+const BUILD = "v1.8.14";
 
 const REPO_URL = "https://github.com/watain666/Vaundy-Taiwan-2026";
 const FEEDBACK_URL = "https://www.threads.com/@brainginger/post/DdiLWztgen9";
@@ -192,7 +192,7 @@ if (themePreference.addEventListener){
 }
 
 function chantVersionControlHtml(scope = "guide"){
-  const label = scope === "song" ? "這首歌的應援版本" : "應援版本";
+  const label = scope === "song" ? "這首歌的應援版" : "應援版";
   return `
     <div class="chant-version-control" data-chant-version-control="${scope}">
       <span class="chant-version-control-label">${label}</span>
@@ -2058,11 +2058,11 @@ function buildSongShell(){
           <span class="venue-label">只聽大合唱</span>
         </button>
         <button class="venue-toggle chant-version-toggle" id="chant-version-btn" data-chant-version-toggle aria-pressed="false" aria-label="切換應援版本">
-          <span class="venue-label">應援版本</span>
+          <span class="venue-label">應援版</span>
           <span class="chant-version-value">${chantVersionIcon()}</span>
         </button>
         <button class="venue-toggle" id="venue-btn" aria-label="開啟／關閉簡潔模式">
-          <span class="venue-label">簡潔模式</span>
+          <span class="venue-label">簡潔</span>
           <span class="venue-switch"><span class="venue-knob"></span></span>
         </button>
         <button class="venue-toggle reading-toggle" id="reading-btn" aria-pressed="${readingMode !== "kana" ? "true" : "false"}" aria-label="切換日文讀音：目前顯示${readingModeLabel()}">

@@ -1312,7 +1312,8 @@
     align-items:center;
     flex:none;
     margin:0 0 0 auto;
-    font-size:11px;
+    font-size:inherit;
+    line-height:inherit;
     color:#8d7d62;
     text-decoration:none;
     white-space:nowrap;
@@ -1323,7 +1324,7 @@
   .lyrics-note{
     width:100%;max-width:720px;margin:16px auto 0;padding:0 16px;
     font-size:12px;color:#b9a98a;
-    display:flex;gap:8px;align-items:flex-start;
+    display:flex;gap:8px;align-items:center;
     flex-wrap:nowrap;
   }
   .lyrics-note .dot{color:var(--teal);}
