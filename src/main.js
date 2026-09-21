@@ -73,7 +73,7 @@ let showJapanese = store("horo-show-japanese") !== "0";
 let showChinese = store("horo-show-chinese") !== "0";
 const storedChantVersion = store("horo-chant-version");
 let chantVersion = storedChantVersion === "kr" ? "kr" : DEFAULT_CHANT_VERSION;
-const CHANT_VERSION_FLAGS = "🇯🇵 🇰🇷";
+const CHANT_VERSION_FLAGS = Object.freeze({ jp: "🇯🇵", kr: "🇰🇷" });
 // 卡拉OK 預設關閉；若使用者曾手動選擇，則沿用保存的設定。
 let karaokeEnabled = store("horo-karaoke") === "1";
 let lastActiveIdx = -1;
@@ -215,6 +215,10 @@ function chantVersionLabel(version = chantVersion){
   return CHANT_VERSIONS[version]?.label || CHANT_VERSIONS.jp.label;
 }
 
+function chantVersionFlag(version = chantVersion){
+  return CHANT_VERSION_FLAGS[version] || CHANT_VERSION_FLAGS.jp;
+}
+
 function chantSourceInfoHtml(){
   return `<span class="chant-source-info">
     <b>應援版本說明</b>：預設為日本版，可在歌詞上方切換日本版／韓國版；切換後大合唱標記會同步更新。<br>
@@ -231,6 +235,9 @@ function applyChantVersionUi(){
   document.querySelectorAll("[data-chant-version-label]").forEach(el => {
     el.textContent = chantVersionLabel();
   });
+  document.querySelectorAll("[data-chant-version-flag]").forEach(el => {
+    el.textContent = chantVersionFlag();
+  });
   const compact = document.getElementById("chant-version-btn");
   if (compact){
     const isKorea = chantVersion === "kr";
@@ -238,7 +245,7 @@ function applyChantVersionUi(){
     compact.setAttribute("aria-pressed", isKorea ? "true" : "false");
     compact.setAttribute("aria-label", `切換應援版本：目前${chantVersionLabel()}，點擊切換`);
     const value = compact.querySelector(".chant-version-value");
-    if (value) value.textContent = CHANT_VERSION_FLAGS;
+    if (value) value.textContent = chantVersionFlag();
   }
 }
 
@@ -1102,17 +1109,17 @@ function renderGuide(){
           ${chantVersionControlHtml("guide")}
         </div>
         <details class="chant-source-details">
-          <summary>應援版本說明 <span aria-hidden="true">${CHANT_VERSION_FLAGS}</span></summary>
+          <summary>應援版本說明 <span data-chant-version-flag aria-hidden="true">${chantVersionFlag()}</span></summary>
           ${chantSourceInfoHtml()}
+          <section class="chant-differences" aria-labelledby="chant-differences-title">
+            <div class="chant-differences-head">
+              <h2 id="chant-differences-title">日本版／韓國版差異</h2>
+              <span class="chant-differences-current">目前：<b data-chant-version-label></b></span>
+            </div>
+            <ul>${CHANT_DIFFERENCES.map(item => `<li>${escapeHtml(item)}</li>`).join("")}</ul>
+            <p class="chant-differences-footnote">未列入日本版歌單的歌曲會暫沿用現有標記，現場仍以 Vaundy 與觀眾的即時引導為準。</p>
+          </section>
         </details>
-        <section class="chant-differences" aria-labelledby="chant-differences-title">
-          <div class="chant-differences-head">
-            <h2 id="chant-differences-title">日本版／韓國版差異</h2>
-            <span class="chant-differences-current">目前：<b data-chant-version-label></b></span>
-          </div>
-          <ul>${CHANT_DIFFERENCES.map(item => `<li>${escapeHtml(item)}</li>`).join("")}</ul>
-          <p class="chant-differences-footnote">未列入日本版歌單的歌曲會暫沿用現有標記，現場仍以 Vaundy 與觀眾的即時引導為準。</p>
-        </section>
         <div class="song-search-sentinel" id="song-search-sentinel"></div>
         <div class="song-search">
           <label class="search-label" for="song-search-input">搜尋歌曲</label>
@@ -2000,7 +2007,7 @@ function buildSongShell(){
         </button>
         <button class="venue-toggle chant-version-toggle" id="chant-version-btn" aria-pressed="false" aria-label="切換應援版本">
           <span class="venue-label">應援版本</span>
-          <span class="chant-version-value">${CHANT_VERSION_FLAGS}</span>
+          <span class="chant-version-value">${chantVersionFlag()}</span>
         </button>
         <button class="venue-toggle" id="venue-btn" aria-label="開啟／關閉簡潔模式">
           <span class="venue-label">簡潔模式</span>
