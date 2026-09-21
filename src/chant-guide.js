@@ -29,21 +29,7 @@ export const JP_CHANT_GUIDES = {
       "「もっと」「ねぇ もっと」請大聲喊；「君がいつも」也可以直接指向 Vaundy。",
       "第一段「落ちてく過去は鮮明で……」整段一起唱；後段只跟著「眠れない夜に／眠らない夜を／眠くないまだね」這些標色回應詞。"
     ],
-    chantTimes: [123.5, 127, 130, 201, 203.5, 206.5, 213.5, 216.5, 219.5],
-    chantSegments: [
-      { time: 46.5,  text: "もっと",       romaji: "motto" },
-      { time: 58.5,  text: "君がいつも",   romaji: "kimi ga itsumo" },
-      { time: 97.5,  text: "もっと",       romaji: "motto" },
-      { time: 110,   text: "君がいつも",   romaji: "kimi ga itsumo" },
-      { time: 143,   text: "ねぇ、もっと", romaji: "nē, motto" },
-      { time: 161,   text: "君がいつも",   romaji: "kimi ga itsumo" },
-      { time: 175.5, text: "眠れない夜に", romaji: "nemure nai yoru ni" },
-      { time: 178.5, text: "眠らない夜を", romaji: "nemura nai yoru o" },
-      { time: 182,   text: "眠くないまだね", romaji: "nemuku nai mada ne" },
-      { time: 188.5, text: "眠れない夜に", romaji: "nemure nai yoru ni" },
-      { time: 191.5, text: "眠らない夜を", romaji: "nemura nai yoru o" },
-      { time: 195,   text: "眠くないまだね", romaji: "眠くないまだね" }
-    ]
+    chantTimes: [46.5, 58.5, 97.5, 110, 123.5, 127, 130, 146.5, 161, 175.5, 178.5, 182, 188.5, 191.5, 195, 201, 203.5, 206.5, 213.5, 216.5, 219.5]
   },
   hanaurana: {
     notes: [
@@ -123,21 +109,20 @@ export const JP_CHANT_GUIDES = {
       "開頭與尾段的「Oh-yeah, yeah-yeah-yeah」請盡量吸飽氣唱。",
       "副歌的「ホムンクルス!」最重要；其他「イチ・ニー・サン」等應援能跟上就好。"
     ],
-    chantTimes: [59, 62.5, 65.5, 72, 77, 109.5, 112.5, 115.5, 122, 127],
-    chantSegments: [
-      { time: 179.5, text: "確かめ合うかより",     romaji: "tashikame au ka yori" },
-      { time: 187.5, text: "思い合えるより",       romaji: "omoi aeru yori" },
-      { time: 190.5, text: "振り剥がせるかより",   romaji: "furi haga seru ka yori" },
-      { time: 196.5, text: "時に歩み合うかより",   romaji: "tokini ayumi au ka yori" },
-      { time: 200,   text: "抱きしめ合えるより",   romaji: "dakishime aeru yori" }
-    ]
+    chantTimes: [59, 62.5, 65.5, 72, 77, 109.5, 112.5, 115.5, 122, 127, 181.5, 187.5, 190.5, 196.5, 200]
   },
   Tokimeki: {
     notes: [
       "日本版會區分 Uh／Yeah、Da、Na、Tu 等不同應援聲，請跟著各段節奏。",
       "「Tokimekiのせい」很重要；這首歌可以和 Vaundy 一起玩得很 High。"
     ],
-    chantTimes: [17, 26.5, 33, 38, 44, 49, 54, 63.5, 89, 99, 105, 110, 115.9, 121, 126, 134.5, 145, 153, 157.5, 161, 166, 172, 177, 182, 191.5]
+    chantTimes: [17, 26.5, 33, 38, 49, 54, 63.5, 89, 99, 105, 110, 121, 126, 134.5, 153, 159.5, 161, 166, 177, 182, 191.5],
+    chantSegments: [
+      { time: 44,   text: "ないぜ", romaji: "nai ze" },
+      { time: 115.9, text: "ないぜ", romaji: "nai ze" },
+      { time: 145,  text: "しまうの", romaji: "shimauno" },
+      { time: 172,  text: "ないぜ", romaji: "nai ze" }
+    ]
   },
   CHAINSAWBLOOD: {
     notes: [
@@ -184,7 +169,7 @@ export const JP_CHANT_GUIDES = {
       "第二次 Whoa, whoa, whoa, yeah, yeah 是三次，接著唱 True, true, true。",
       "副歌以「先生」與「全然」交互喊為主。"
     ],
-    chantTimes: [33],
+    chantTimes: [33, 183, 194.5],
     chantSegments: [
       { time: 47,    text: "先生",                  romaji: "sensei" },
       { time: 50.5,  text: "全然",                  romaji: "zenzen" },
@@ -192,12 +177,10 @@ export const JP_CHANT_GUIDES = {
       { time: 61.5,  text: "全然",                  romaji: "zenzen" },
       { time: 104,   text: "先生",                  romaji: "sensei" },
       { time: 106.5, text: "全然",                  romaji: "zenzen" },
-      { time: 159.5, text: "先生",                  romaji: "sensei" },
+      { time: 161.5, text: "先生",                  romaji: "sensei" },
       { time: 163,   text: "全然",                  romaji: "zenzen" },
       { time: 171.5, text: "先生",                  romaji: "sensei" },
       { time: 174.5, text: "全然",                  romaji: "zenzen" },
-      { time: 183,   text: "Wha wha wha yeah yeah", romaji: "Wha wha wha yeah yeah" },
-      { time: 194.5, text: "Wha wha wha yeah yeah", romaji: "Wha wha wha yeah yeah" }
     ]
   },
   ZuttoLoveSong: {
@@ -238,7 +221,7 @@ export const JP_CHANT_GUIDES = {
     notes: [
       "副歌回應從「今日の夜は／今夜だけは」開始，接著唱「祈りあった未来とて」「道が違うのよ」「アナタ」「互いの殺意で」「トドメ」。"
     ],
-    chantTimes: [63.5, 73, 84.5, 87, 94, 96.5, 159.5, 169, 180.5, 183, 190, 192.5, 236, 246, 256, 262, 265, 276.5, 279, 286, 288.5, 295.5, 298, 305, 307.5]
+    chantTimes: [62, 63.5, 73, 84.5, 87, 94, 96.5, 155, 159.5, 169, 180.5, 183, 190, 192.5, 236, 246, 256, 262, 265, 276.5, 279, 286, 288.5, 295.5, 298, 305, 307.5]
   }
 };
 
