@@ -4286,7 +4286,7 @@ function showInstallHint(html, btnLabel, onClick){
 /* 1) 서비스워커 등록 — 오프라인에서도 가사가 열리게 */
 if ("serviceWorker" in navigator && location.protocol.startsWith("http")) {
   window.addEventListener("load", ()=>{
-    navigator.serviceWorker.register("./sw.js").then((reg)=>{
+    navigator.serviceWorker.register(`./sw.js?build=${BUILD}`).then((reg)=>{
       reg.addEventListener("updatefound", ()=>{
         const sw = reg.installing;
         if (!sw) return;
