@@ -24,7 +24,8 @@ import {
   TRACK_NEXT_SVG,
   CLOSE_SVG,
   SUN_SVG,
-  MOON_SVG
+  MOON_SVG,
+  CHANT_VERSION_ICONS
 } from "./ui/icons.js";
 
 import {
@@ -73,7 +74,6 @@ let showJapanese = store("horo-show-japanese") !== "0";
 let showChinese = store("horo-show-chinese") !== "0";
 const storedChantVersion = store("horo-chant-version");
 let chantVersion = storedChantVersion === "kr" ? "kr" : DEFAULT_CHANT_VERSION;
-const CHANT_VERSION_FLAGS = Object.freeze({ jp: "🇯🇵", kr: "🇰🇷" });
 // 卡拉OK 預設關閉；若使用者曾手動選擇，則沿用保存的設定。
 let karaokeEnabled = store("horo-karaoke") === "1";
 let lastActiveIdx = -1;
@@ -215,8 +215,8 @@ function chantVersionLabel(version = chantVersion){
   return CHANT_VERSIONS[version]?.label || CHANT_VERSIONS.jp.label;
 }
 
-function chantVersionFlag(version = chantVersion){
-  return CHANT_VERSION_FLAGS[version] || CHANT_VERSION_FLAGS.jp;
+function chantVersionIcon(version = chantVersion){
+  return CHANT_VERSION_ICONS[version] || CHANT_VERSION_ICONS.jp;
 }
 
 function chantSourceInfoHtml(){
@@ -236,7 +236,7 @@ function applyChantVersionUi(){
     el.textContent = chantVersionLabel();
   });
   document.querySelectorAll("[data-chant-version-flag]").forEach(el => {
-    el.textContent = chantVersionFlag();
+    el.innerHTML = chantVersionIcon();
   });
   const compact = document.getElementById("chant-version-btn");
   if (compact){
@@ -245,7 +245,7 @@ function applyChantVersionUi(){
     compact.setAttribute("aria-pressed", isKorea ? "true" : "false");
     compact.setAttribute("aria-label", `切換應援版本：目前${chantVersionLabel()}，點擊切換`);
     const value = compact.querySelector(".chant-version-value");
-    if (value) value.textContent = chantVersionFlag();
+    if (value) value.innerHTML = chantVersionIcon();
   }
 }
 
@@ -1106,10 +1106,9 @@ function renderGuide(){
             <span class="legend-item"><span class="legend-icon spin">${INLINE_ICONS.spin}</span>轉臂</span>
           </div>
           <p class="song-legend-note">數字代表目前應援版本的大合唱歌詞行數。<br>切換歌曲時會依目前排序移動。<br>拍手・揮手提示會顯示在歌曲頁面。</p>
-          ${chantVersionControlHtml("guide")}
         </div>
         <details class="chant-source-details">
-          <summary>應援版本說明 <span data-chant-version-flag aria-hidden="true">${chantVersionFlag()}</span></summary>
+          <summary>應援版本說明 <span data-chant-version-flag aria-hidden="true">${chantVersionIcon()}</span></summary>
           ${chantSourceInfoHtml()}
           <section class="chant-differences" aria-labelledby="chant-differences-title">
             <div class="chant-differences-head">
@@ -2007,7 +2006,7 @@ function buildSongShell(){
         </button>
         <button class="venue-toggle chant-version-toggle" id="chant-version-btn" aria-pressed="false" aria-label="切換應援版本">
           <span class="venue-label">應援版本</span>
-          <span class="chant-version-value">${chantVersionFlag()}</span>
+          <span class="chant-version-value">${chantVersionIcon()}</span>
         </button>
         <button class="venue-toggle" id="venue-btn" aria-label="開啟／關閉簡潔模式">
           <span class="venue-label">簡潔模式</span>
