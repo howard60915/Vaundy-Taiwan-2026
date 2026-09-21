@@ -2279,6 +2279,7 @@ function repaintChantVersionLines(song = currentSong){
     const lyric = song.lyrics[index];
     if (!lyric) return;
     line.classList.toggle("is-chant", lineIsChant(lyric, song));
+    line.classList.toggle("chant-partial", lineUsesChantSegments(lyric));
     const icons = line.querySelector(".lyric-icons");
     if (icons) icons.innerHTML = lyricIconsHtml(lyric, song);
   });
@@ -2524,7 +2525,7 @@ function renderSong(song){
 
   document.getElementById("lyrics-list").innerHTML = song.lyrics.map((l,i)=>`
     <li>
-      <button class="lyric-line${lineIsChant(l, song) ? " is-chant" : ""}" data-time="${l.time}" data-idx="${i}">
+      <button class="lyric-line${lineIsChant(l, song) ? " is-chant" : ""}${lineUsesChantSegments(l) ? " chant-partial" : ""}" data-time="${l.time}" data-idx="${i}">
         <span class="lyric-icons">${lyricIconsHtml(l, song)}</span>
         <span class="lyric-body">
           <span class="lyric-jp" lang="ja">${renderJapaneseLine(l.jp || "")}</span>
@@ -2533,6 +2534,9 @@ function renderSong(song){
         </span>
       </button>
     </li>`).join("");
+  document.querySelectorAll("#lyrics-list .lyric-line").forEach(line => {
+    markLyricChantSegments(line, song.lyrics[Number(line.dataset.idx)]);
+  });
   decorateKaraokeLines(song);
   setKaraokeSourceStatus("loading", "歌詞逐字時間：正在尋找開源時間碼…");
 
@@ -2711,6 +2715,7 @@ function repaintJapaneseReadings(){
         ? renderRomajiLine(lyric.jp || "", false)
         : "";
     }
+    markLyricChantSegments(line, lyric);
     decorateKaraokeLine(target);
     if (romajiTarget) decorateKaraokeLine(romajiTarget);
     assignKaraokeLineTiming(line, karaokeLineTiming(currentSong, idx));
@@ -2955,6 +2960,168 @@ function readingModeLabel(mode = readingMode){
 
 function renderJapaneseLine(str){
   return readingMode === "romaji" ? renderRomajiLine(str) : renderKanaLine(str);
+}
+
+/*
+ * 分段合唱標色
+ *
+ * data.js 把 jp／tr 的分段另存在 jpSegments／trSegments。畫面照常用整行
+ * 字串渲染，渲染後再依分段把合唱段包成 .seg-chant。比對時略過空白與
+ * 動作圖示，因為中日英之間的空白是顯示層另外補上的。
+ */
+const isLyricSpace = (ch)=> /\s/u.test(ch);
+
+function hasChantSegment(segments){
+  return Array.isArray(segments) && segments.some(seg => seg && seg.tag === "chant");
+}
+
+function lineHasChantSegments(line){
+  return !!line && (hasChantSegment(line.jpSegments) || hasChantSegment(line.trSegments));
+}
+
+/* 分段是依日本版應援整理的，只在日本版生效；韓國版維持整行標色。 */
+function lineUsesChantSegments(line){
+  return chantVersion === "jp" && lineHasChantSegments(line);
+}
+
+/* 依分段原文逐字標記：每個非空白字元對應 true（合唱）或 false。 */
+function segmentChantMask(segments){
+  const mask = [];
+  segments.forEach(seg => {
+    const text = String(seg && seg.text || "").replace(ICON_TOKEN_RE, "");
+    Array.from(text).forEach(ch => {
+      if (!isLyricSpace(ch)) mask.push(seg.tag === "chant");
+    });
+  });
+  return mask;
+}
+
+/* 羅馬拼音沒有分段，只能在整行拼音裡找原文相同的英文合唱段。
+   假名合唱段的拼音對應之後再處理，找不到時就不標色。 */
+function romajiChantMask(compactText, segments){
+  const mask = Array.from(compactText).map(() => false);
+  let cursor = 0;
+  segments.forEach(seg => {
+    if (!seg || seg.tag !== "chant") return;
+    const needle = Array.from(String(seg.text || "").replace(ICON_TOKEN_RE, ""))
+      .filter(ch => !isLyricSpace(ch)).join("");
+    if (!needle || !/^[\x21-\x7e]+$/.test(needle)) return;
+    const at = compactText.indexOf(needle, cursor);
+    if (at < 0) return;
+    const start = Array.from(compactText.slice(0, at)).length;
+    Array.from(needle).forEach((_, i) => { mask[start + i] = true; });
+    cursor = at + needle.length;
+  });
+  return mask;
+}
+
+/* 收集可見文字的片段。ruby 整個當成一個片段，避免把 rt 算進去，
+   也讓逐字高亮仍能讀到 ruby 的本文。 */
+function chantTextPieces(target){
+  const pieces = [];
+  const visit = (parent)=>{
+    [...parent.childNodes].forEach(node => {
+      if (node.nodeType === Node.TEXT_NODE){
+        pieces.push({ node, text: node.nodeValue || "" });
+        return;
+      }
+      if (node.nodeType !== Node.ELEMENT_NODE) return;
+      if (node.classList.contains("ico") || node.tagName === "RT" || node.tagName === "RP") return;
+      if (node.tagName === "RUBY"){
+        const base = [...node.childNodes]
+          .filter(child => child.nodeType === Node.TEXT_NODE)
+          .map(child => child.nodeValue || "")
+          .join("");
+        pieces.push({ node, text: base, atomic: true });
+        return;
+      }
+      visit(node);
+    });
+  };
+  visit(target);
+  return pieces;
+}
+
+function wrapChantNode(node){
+  const span = document.createElement("span");
+  span.className = "seg-chant";
+  node.replaceWith(span);
+  span.appendChild(node);
+}
+
+function splitTextNodeByMask(node, mask, index){
+  const fragment = document.createDocumentFragment();
+  let run = "", runChant = false;
+  const flush = ()=>{
+    if (!run) return;
+    const textNode = document.createTextNode(run);
+    if (runChant){
+      const span = document.createElement("span");
+      span.className = "seg-chant";
+      span.appendChild(textNode);
+      fragment.appendChild(span);
+    } else {
+      fragment.appendChild(textNode);
+    }
+    run = "";
+  };
+  Array.from(node.nodeValue || "").forEach(ch => {
+    if (!isLyricSpace(ch)){
+      const chant = mask[index++];
+      if (chant !== runChant){ flush(); runChant = chant; }
+    }
+    run += ch;
+  });
+  flush();
+  node.replaceWith(fragment);
+  return index;
+}
+
+function applyChantMask(target, mask){
+  // 切換讀音只重畫日文列，繁中列已經標過就不要再包一次。
+  if (target.querySelector(".seg-chant")) return;
+  const pieces = chantTextPieces(target);
+  const compactLength = pieces.reduce((sum, piece) =>
+    sum + Array.from(piece.text).filter(ch => !isLyricSpace(ch)).length, 0);
+  // 查表結果與分段原文對不上時不標色，避免標錯位置。
+  if (compactLength !== mask.length || !mask.includes(true)) return;
+  let index = 0;
+  pieces.forEach(piece => {
+    if (piece.atomic){
+      const count = Array.from(piece.text).filter(ch => !isLyricSpace(ch)).length;
+      if (mask.slice(index, index + count).some(Boolean)) wrapChantNode(piece.node);
+      index += count;
+      return;
+    }
+    index = splitTextNodeByMask(piece.node, mask, index);
+  });
+}
+
+function markRomajiChant(target, segments){
+  const compact = chantTextPieces(target)
+    .map(piece => Array.from(piece.text).filter(ch => !isLyricSpace(ch)).join(""))
+    .join("");
+  applyChantMask(target, romajiChantMask(compact, segments));
+}
+
+/* 在一行歌詞的日文、羅馬拼音、繁中列標出合唱段。
+   必須在逐字高亮（decorateKaraokeLine）之前呼叫。 */
+function markLyricChantSegments(lineEl, lyric){
+  if (!lineEl || !lineHasChantSegments(lyric)) return;
+  const jpSegments = lyric.jpSegments;
+  if (hasChantSegment(jpSegments)){
+    const jpEl = lineEl.querySelector(".lyric-jp");
+    if (jpEl){
+      if (readingMode === "romaji") markRomajiChant(jpEl, jpSegments);
+      else applyChantMask(jpEl, segmentChantMask(jpSegments));
+    }
+    const romajiEl = lineEl.querySelector(".lyric-romaji");
+    if (romajiEl) markRomajiChant(romajiEl, jpSegments);
+  }
+  const zhEl = lineEl.querySelector(".lyric-zh");
+  if (zhEl && hasChantSegment(lyric.trSegments)){
+    applyChantMask(zhEl, segmentChantMask(lyric.trSegments));
+  }
 }
 
 /*

@@ -65,36 +65,36 @@ export const SONGS = [
       { time: 9, jp: "[clap]思い当たるのは 誰かの 涙が落ちる音",        ko: [{ text: "오모이아타루노와 다레카노 나미다가 오치루 오토", tag: "clap" }],                                                     tr: "我所想起的是　他人的　落淚的聲音" },
       /* ↓↓ 짤방 예시 — 이 세 줄 동안 손 흔들기 사진이 가사 위에 떠 있습니다.
             다른 줄에도 똑같이  pic: "이름"  만 붙이면 됩니다. ↓↓ */
-      { time: 17, jp: "[wave]Hu Hu Hu Ya Ya x3",        ko: [{ text: "Hu Hu Hu Ya Ya x3", tag: "chant" }],                                                    tr: "Hu Hu Hu Ya Ya x3" },
-      { time: 22.5, jp: "[wave]それは、軽やかな魔法 Hu Hu Hu Ya Ya x2", ko: [{ text: "소레와 카로야카나 마호-" }, { text: " Hu Hu Hu Ya Ya x2", tag: "chant" }],               tr: "那是道、讓人感到輕鬆的魔法 Hu Hu Hu Ya Ya x2"},
+      { time: 17, jp: [{ text: "[wave]Hu Hu Hu Ya Ya x3", tag: "chant" }],        ko: [{ text: "Hu Hu Hu Ya Ya x3", tag: "chant" }],                                                    tr: [{ text: "Hu Hu Hu Ya Ya x3", tag: "chant" }] },
+      { time: 22.5, jp: [{ text: "[wave]それは、軽やかな魔法" }, { text: " Hu Hu Hu Ya Ya x2", tag: "chant" }], ko: [{ text: "소레와 카로야카나 마호-" }, { text: " Hu Hu Hu Ya Ya x2", tag: "chant" }],               tr: [{ text: "那是道、讓人感到輕鬆的魔法" }, { text: " Hu Hu Hu Ya Ya x2", tag: "chant" }]},
       { time: 29,  jp: "[wave]美しいほど 止まらぬCRY", ko: "우츠쿠시이 호도 토마라누 CRY",                                 tr: "美得讓人動容　停止不了的CRY"},
-      { time: 33, jp: "[wave]DA-DADADADA Just dancing tonight", ko: [{ text: "DA-DADADADA ", tag: "chant" }, { text: "Just dancing tonight"}],               tr: "DA-DADADADA Just dancing tonight" , pic: "wave_dada" },
-      { time: 38, jp: "[wave](DA-DA-DA) 涙流して笑えばいいさ", ko: [{ text: "(DA-DA-DA) ", tag: "chant" }, { text: "나미다 나가시테 와라에바 이-사"}],               tr: "(DA-DA-DA) 就這麼喜極而泣吧" },
-      { time: 44, jp: "[wave]見えぬ未来も 悪くはないぜ (ないぜ)", ko: [{ text: "미에누 미라이모 와루쿠와 나이제" }, { text: " (나이제)", tag: "chant" }],               tr: "就算是看不見的未來　也一點都不糟糕啊" },
-      { time: 49, jp: "[wave]DA-DADADADA Just dancing tonight", ko: [{ text: "DA-DADADADA ", tag: "chant" }, { text: "Just dancing tonight"}],               tr: "DA-DADADADA Just dancing tonight", pic: "wave_dada" },
-      { time: 54, jp: "[wave](DA-DA-DA) あくびしてる暇なんかないぜ", ko: [{ text: "(DA-DA-DA) ", tag: "chant" }, { text: "아쿠비시테루 히마난카 나이제"}],               tr: "(DA-DA-DA) 我們可沒有打呵欠的空閒啊" },
-      { time: 59.5, jp: "[wave]ほら、ほらもっと聞かせて Hu Hu Hu Hu Hu", ko: [{ text: "호라 호라 못토 키카세테" }, { text: " Hu Hu Hu Hu Hu", tag: "chant" }],               tr: "來吧、來吧 再讓我聽見更多吧 Hu Hu Hu Hu Hu" },
+      { time: 33, jp: [{ text: "[wave]DA-DADADADA ", tag: "chant" }, { text: "Just dancing tonight" }], ko: [{ text: "DA-DADADADA ", tag: "chant" }, { text: "Just dancing tonight"}],               tr: [{ text: "DA-DADADADA ", tag: "chant" }, { text: "Just dancing tonight" }] , pic: "wave_dada" },
+      { time: 38, jp: [{ text: "[wave](DA-DA-DA) ", tag: "chant" }, { text: "涙流して笑えばいいさ" }], ko: [{ text: "(DA-DA-DA) ", tag: "chant" }, { text: "나미다 나가시테 와라에바 이-사"}],               tr: [{ text: "(DA-DA-DA) ", tag: "chant" }, { text: "就這麼喜極而泣吧" }] },
+      { time: 44, jp: [{ text: "[wave]見えぬ未来も 悪くはないぜ" }, { text: " (ないぜ)", tag: "chant" }], ko: [{ text: "미에누 미라이모 와루쿠와 나이제" }, { text: " (나이제)", tag: "chant" }],               tr: "就算是看不見的未來　也一點都不糟糕啊" },
+      { time: 49, jp: [{ text: "[wave]DA-DADADADA ", tag: "chant" }, { text: "Just dancing tonight" }], ko: [{ text: "DA-DADADADA ", tag: "chant" }, { text: "Just dancing tonight"}],               tr: [{ text: "DA-DADADADA ", tag: "chant" }, { text: "Just dancing tonight" }], pic: "wave_dada" },
+      { time: 54, jp: [{ text: "[wave](DA-DA-DA) ", tag: "chant" }, { text: "あくびしてる暇なんかないぜ" }], ko: [{ text: "(DA-DA-DA) ", tag: "chant" }, { text: "아쿠비시테루 히마난카 나이제"}],               tr: [{ text: "(DA-DA-DA) ", tag: "chant" }, { text: "我們可沒有打呵欠的空閒啊" }] },
+      { time: 59.5, jp: [{ text: "[wave]ほら、ほらもっと聞かせて" }, { text: " Hu Hu Hu Hu Hu", tag: "chant" }], ko: [{ text: "호라 호라 못토 키카세테" }, { text: " Hu Hu Hu Hu Hu", tag: "chant" }],               tr: [{ text: "來吧、來吧 再讓我聽見更多吧" }, { text: " Hu Hu Hu Hu Hu", tag: "chant" }] },
       { time: 73, jp: "[clap]聞こえてるのは 確かな ときめきで歌う魔法",        ko: [{ text: "키코에테루노와 타시카나 토키메키데 히카루\u00a0마호", tag: "clap" }],                                                     tr: "我所聽見的是　確實的　靠Tokimeki歌唱的魔法" },
       { time: 81, jp: "[clap]思い当たるのは 誰かの 鼻歌のイントロ",        ko: [{ text: "오모이아타루노와 다레카노 하나우타노 인토로", tag: "clap" }],                                                     tr: "我所想起的是　他人所　哼唱而出的Intro" },
-      { time: 89, jp: "[wave] Hu Hu Hu Ya Ya x3",        ko: [{ text: "Hu Hu Hu Ya Ya x3", tag: "chant" }],                                                    tr: "Hu Hu Hu Ya Ya x3" },
-      { time: 95, jp: "[wave]それは、鮮やかな魔法 Hu Hu Hu Ya Ya x2", ko: [{ text: "소레와 아자야카나 마호-" }, { text: " Hu Hu Hu Ya Ya x2", tag: "chant" }],               tr: "那是道、鮮明的魔法 Hu Hu Hu Ya Ya x2" },
+      { time: 89, jp: [{ text: "[wave] Hu Hu Hu Ya Ya x3", tag: "chant" }],        ko: [{ text: "Hu Hu Hu Ya Ya x3", tag: "chant" }],                                                    tr: [{ text: "Hu Hu Hu Ya Ya x3", tag: "chant" }] },
+      { time: 95, jp: [{ text: "[wave]それは、鮮やかな魔法" }, { text: " Hu Hu Hu Ya Ya x2", tag: "chant" }], ko: [{ text: "소레와 아자야카나 마호-" }, { text: " Hu Hu Hu Ya Ya x2", tag: "chant" }],               tr: [{ text: "那是道、鮮明的魔法" }, { text: " Hu Hu Hu Ya Ya x2", tag: "chant" }] },
       { time: 101,  jp: "[wave]聞こえてるのは", ko: "키코에테루노와",                                 tr: "我所聽見的是" },
-      { time: 105, jp: "[wave]DA-DADADADA Just dancing tonight", ko: [{ text: "DA-DADADADA ", tag: "chant" }, { text: "Just dancing tonight"}],               tr: "DA-DADADADA Just dancing tonight" , pic: "wave_dada"},
-      { time: 110, jp: "[wave](DA-DA-DA) 涙流して笑えばいいさ", ko: [{ text: "(DA-DA-DA) ", tag: "chant" }, { text: "나미다 나가시테 와라에바 이-사"}],               tr: "(DA-DA-DA) 就這麼喜極而泣吧" },
-      { time: 115.9, jp: "[wave]見えぬ未来も 悪くはないぜ (ないぜ)", ko: [{ text: "미에누 미라이모 와루쿠와 나이제" }, { text: " (나이제)", tag: "chant" }],               tr: "就算是看不見的未來　也一點都不糟糕啊" },
-      { time: 121, jp: "[wave]DA-DADADADA Just dancing tonight", ko: [{ text: "DA-DADADADA ", tag: "chant" }, { text: "Just dancing tonight"}],               tr: "DA-DADADADA Just dancing tonight" , pic: "wave_dada"},
-      { time: 126, jp: "[wave](DA-DA-DA) あくびしてる暇なんかないぜ", ko: [{ text: "(DA-DA-DA) ", tag: "chant" }, { text: "아쿠비시테루 히마난카 나이제"}],               tr: "(DA-DA-DA) 我們可沒有打呵欠的空閒啊" },
-      { time: 131.5, jp: "[wave]ほら、ほらもっと聞かせて Hu Hu Hu Hu", ko: [{ text: "호라 호라 못토 키카세테" }, { text: " Hu Hu Hu Hu", tag: "chant" }],               tr: "來吧、來吧 再讓我聽見更多吧 Hu Hu Hu Hu" },
+      { time: 105, jp: [{ text: "[wave]DA-DADADADA ", tag: "chant" }, { text: "Just dancing tonight" }], ko: [{ text: "DA-DADADADA ", tag: "chant" }, { text: "Just dancing tonight"}],               tr: [{ text: "DA-DADADADA ", tag: "chant" }, { text: "Just dancing tonight" }] , pic: "wave_dada"},
+      { time: 110, jp: [{ text: "[wave](DA-DA-DA) ", tag: "chant" }, { text: "涙流して笑えばいいさ" }], ko: [{ text: "(DA-DA-DA) ", tag: "chant" }, { text: "나미다 나가시테 와라에바 이-사"}],               tr: [{ text: "(DA-DA-DA) ", tag: "chant" }, { text: "就這麼喜極而泣吧" }] },
+      { time: 115.9, jp: [{ text: "[wave]見えぬ未来も 悪くはないぜ" }, { text: " (ないぜ)", tag: "chant" }], ko: [{ text: "미에누 미라이모 와루쿠와 나이제" }, { text: " (나이제)", tag: "chant" }],               tr: "就算是看不見的未來　也一點都不糟糕啊" },
+      { time: 121, jp: [{ text: "[wave]DA-DADADADA ", tag: "chant" }, { text: "Just dancing tonight" }], ko: [{ text: "DA-DADADADA ", tag: "chant" }, { text: "Just dancing tonight"}],               tr: [{ text: "DA-DADADADA ", tag: "chant" }, { text: "Just dancing tonight" }] , pic: "wave_dada"},
+      { time: 126, jp: [{ text: "[wave](DA-DA-DA) ", tag: "chant" }, { text: "あくびしてる暇なんかないぜ" }], ko: [{ text: "(DA-DA-DA) ", tag: "chant" }, { text: "아쿠비시테루 히마난카 나이제"}],               tr: [{ text: "(DA-DA-DA) ", tag: "chant" }, { text: "我們可沒有打呵欠的空閒啊" }] },
+      { time: 131.5, jp: [{ text: "[wave]ほら、ほらもっと聞かせて" }, { text: " Hu Hu Hu Hu", tag: "chant" }], ko: [{ text: "호라 호라 못토 키카세테" }, { text: " Hu Hu Hu Hu", tag: "chant" }],               tr: [{ text: "來吧、來吧 再讓我聽見更多吧" }, { text: " Hu Hu Hu Hu", tag: "chant" }] },
       { time: 137, jp: "途切れない 悲しみは点で 線を描いてるようだ",        ko: [{ text: "토기레나이 카나시미와 텐데 센오 에가이테루 요-다", tag: "clap" }],                                                     tr: "不斷湧上心頭的　悲傷　就像是靠點、來描繪出線一樣" },
-      { time: 145, jp: "震え出す その線のせいで 動き出してしまうの",        ko: [{ text: "후루에다스 소노 센노 세이데 우고키다시테 시마우노", tag: "clap" }, { text: " (시마우노)", tag: "chant" }],                                                     tr: "我因為那條　開始顫抖的線　而開始行動" },
-      { time: 153, jp: "[wave]Du Du Du Ya Ya x2",        ko: [{ text: "Du Du Du Ya Ya x2", tag: "chant" }],                                                     tr: "Du Du Du Ya Ya x2" },
-      { time: 157.5, jp: "[wave]止まれないのは ときめきのせい", ko: [{ text: "토마레나이노와" }, { text: " 토키메키노 세-", tag: "chant" }],               tr: "之所以我無法停止　都是Tokimeki的錯" },
-      { time: 161, jp: "[wave]DA-DADADADA Just dancing tonight", ko: [{ text: "DA-DADADADA ", tag: "chant" }, { text: "Just dancing tonight"}],               tr: "DA-DADADADA Just dancing tonight" , pic: "wave_dada"},
-      { time: 166, jp: "[wave](DA-DA-DA) 涙流して笑えばいいさ", ko: [{ text: "(DA-DA-DA) ", tag: "chant" }, { text: "나미다 나가시테 와라에바 이-사"}],               tr: "(DA-DA-DA) 就這麼喜極而泣吧" },
-      { time: 172, jp: "[wave]見えぬ未来も 悪くはないぜ (ないぜ)", ko: [{ text: "미에누 미라이모 와루쿠와 나이제" }, { text: " (나이제)", tag: "chant" }],               tr: "就算是看不見的未來　也一點都不糟糕啊" },
-      { time: 177, jp: "[wave]DA-DADADADA Just dancing tonight", ko: [{ text: "DA-DADADADA ", tag: "chant" }, { text: "Just dancing tonight"}],               tr: "DA-DADADADA Just dancing tonight" , pic: "wave_dada"},
-      { time: 182, jp: "[wave](DA-DA-DA) あくびしてる暇なんかないぜ", ko: [{ text: "(DA-DA-DA) ", tag: "chant" }, { text: "아쿠비시테루 히마난카 나이제"}],               tr: "(DA-DA-DA) 我們可沒有打呵欠的空閒啊" },
-      { time: 187.5, jp: "[wave]ほら、ほらもっと聞かせて Hu Hu Hu Hu Hu", ko: [{ text: "호라 호라 못토 키카세테" }, { text: " Hu Hu Hu Hu Hu", tag: "chant" }],               tr: "來吧、來吧 再讓我聽見更多吧 Hu Hu Hu Hu Hu" },
+      { time: 145, jp: [{ text: "震え出す その線のせいで 動き出してしまうの" }, { text: " (しまうの)", tag: "chant" }],        ko: [{ text: "후루에다스 소노 센노 세이데 우고키다시테 시마우노", tag: "clap" }, { text: " (시마우노)", tag: "chant" }],                                                     tr: "我因為那條　開始顫抖的線　而開始行動" },
+      { time: 153, jp: [{ text: "[wave]Du Du Du Ya Ya x2", tag: "chant" }],        ko: [{ text: "Du Du Du Ya Ya x2", tag: "chant" }],                                                     tr: [{ text: "Du Du Du Ya Ya x2", tag: "chant" }] },
+      { time: 157.5, jp: [{ text: "[wave]止まれないのは" }, { text: " ときめきのせい", tag: "chant" }], ko: [{ text: "토마레나이노와" }, { text: " 토키메키노 세-", tag: "chant" }],               tr: [{ text: "之所以我無法停止　" }, { text: "都是Tokimeki的錯", tag: "chant" }] },
+      { time: 161, jp: [{ text: "[wave]DA-DADADADA ", tag: "chant" }, { text: "Just dancing tonight" }], ko: [{ text: "DA-DADADADA ", tag: "chant" }, { text: "Just dancing tonight"}],               tr: [{ text: "DA-DADADADA ", tag: "chant" }, { text: "Just dancing tonight" }] , pic: "wave_dada"},
+      { time: 166, jp: [{ text: "[wave](DA-DA-DA) ", tag: "chant" }, { text: "涙流して笑えばいいさ" }], ko: [{ text: "(DA-DA-DA) ", tag: "chant" }, { text: "나미다 나가시테 와라에바 이-사"}],               tr: [{ text: "(DA-DA-DA) ", tag: "chant" }, { text: "就這麼喜極而泣吧" }] },
+      { time: 172, jp: [{ text: "[wave]見えぬ未来も 悪くはないぜ" }, { text: " (ないぜ)", tag: "chant" }], ko: [{ text: "미에누 미라이모 와루쿠와 나이제" }, { text: " (나이제)", tag: "chant" }],               tr: "就算是看不見的未來　也一點都不糟糕啊" },
+      { time: 177, jp: [{ text: "[wave]DA-DADADADA ", tag: "chant" }, { text: "Just dancing tonight" }], ko: [{ text: "DA-DADADADA ", tag: "chant" }, { text: "Just dancing tonight"}],               tr: [{ text: "DA-DADADADA ", tag: "chant" }, { text: "Just dancing tonight" }] , pic: "wave_dada"},
+      { time: 182, jp: [{ text: "[wave](DA-DA-DA) ", tag: "chant" }, { text: "あくびしてる暇なんかないぜ" }], ko: [{ text: "(DA-DA-DA) ", tag: "chant" }, { text: "아쿠비시테루 히마난카 나이제"}],               tr: [{ text: "(DA-DA-DA) ", tag: "chant" }, { text: "我們可沒有打呵欠的空閒啊" }] },
+      { time: 187.5, jp: [{ text: "[wave]ほら、ほらもっと聞かせて" }, { text: " Hu Hu Hu Hu Hu", tag: "chant" }], ko: [{ text: "호라 호라 못토 키카세테" }, { text: " Hu Hu Hu Hu Hu", tag: "chant" }],               tr: [{ text: "來吧、來吧 再讓我聽見更多吧" }, { text: " Hu Hu Hu Hu Hu", tag: "chant" }] },
     ],
   },
   {
@@ -1725,6 +1725,26 @@ export const SONGS = [
     ],
   },
 ];
+
+/* jp／tr 也可以像 ko 一樣分段，用 tag:"chant" 標出合唱段。
+   假名、羅馬拼音與逐字歌詞都以整行字串查表，所以這裡把分段串回
+   原本的字串，分段另存在 jpSegments／trSegments，只給畫面標色使用。 */
+const joinLyricSegments = (segments) => segments
+  .map(seg => typeof seg === "string" ? seg : seg && seg.text || "")
+  .join("");
+
+SONGS.forEach(song => {
+  (song.lyrics || []).forEach(line => {
+    if (Array.isArray(line.jp)){
+      line.jpSegments = line.jp;
+      line.jp = joinLyricSegments(line.jp);
+    }
+    if (Array.isArray(line.tr)){
+      line.trSegments = line.tr;
+      line.tr = joinLyricSegments(line.tr);
+    }
+  });
+});
 
 /* ZERO 是英文歌，早期資料誤把英文原文放在 ko 欄位，導致共用的
    jp／原文欄位留白，也讓逐字歌詞對齊找不到文字。保留 ko 給應援標記，
