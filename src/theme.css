@@ -687,7 +687,7 @@ button{touch-action:manipulation;}
   padding-bottom:16px;
 }
 .song-page .video-wrap{margin-top:6px;}
-.song-page .watch-on-yt{margin-top:4px;}
+.song-page .watch-on-yt{margin:0 0 0 auto;}
 .song-page .lyrics-note{margin-top:8px;}
 .song-page .lyrics-legend{margin-top:8px;}
 .song-page .lyrics-list{margin-top:4px;}
