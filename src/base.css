@@ -1734,21 +1734,35 @@
   .song-page.reading-both .lyric-romaji{ display:block; }
   /* 合唱行固定使用金黃色；不依賴瀏覽器對 ruby 或按鈕 color 的繼承，
      因此 Safari 與 Chrome 會得到同一個結果。 */
-  .lyric-line.is-chant .lyric-jp,
-  .lyric-line.is-chant .lyric-romaji,
-  .lyric-line.is-chant .lyric-bg{
+  .lyric-line.is-chant:not(.chant-partial) .lyric-jp,
+  .lyric-line.is-chant:not(.chant-partial) .lyric-romaji,
+  .lyric-line.is-chant .lyric-bg,
+  .lyric-line.is-chant.chant-partial .lyric-body .seg-chant{
     color:var(--chant);
   }
-  .lyric-line.is-chant .lyric-jp .karaoke-unit,
-  .lyric-line.is-chant .lyric-romaji .karaoke-unit{
+  /* 日本版有分段標記（chant-partial）的行只標 .seg-chant。不是合唱的行，
+     以及韓國版的行，分段維持原本的顏色。 */
+  .lyric-line:not(.is-chant) .lyric-jp .seg-chant,
+  .lyric-line:not(.is-chant) .lyric-romaji .seg-chant,
+  .lyric-line:not(.is-chant) .lyric-zh .seg-chant,
+  .lyric-line:not(.chant-partial) .lyric-jp .seg-chant,
+  .lyric-line:not(.chant-partial) .lyric-romaji .seg-chant,
+  .lyric-line:not(.chant-partial) .lyric-zh .seg-chant{
+    color:inherit;
+  }
+  .lyric-line.is-chant:not(.chant-partial) .lyric-jp .karaoke-unit,
+  .lyric-line.is-chant:not(.chant-partial) .lyric-romaji .karaoke-unit,
+  .lyric-line.is-chant.chant-partial .seg-chant .karaoke-unit{
     color:rgba(245,148,44,.72);
   }
-  .lyric-line.active.is-chant .lyric-jp .karaoke-unit.karaoke-lit,
-  .lyric-line.active.is-chant .lyric-romaji .karaoke-unit.karaoke-lit{
+  .lyric-line.active.is-chant:not(.chant-partial) .lyric-jp .karaoke-unit.karaoke-lit,
+  .lyric-line.active.is-chant:not(.chant-partial) .lyric-romaji .karaoke-unit.karaoke-lit,
+  .lyric-line.active.is-chant.chant-partial .seg-chant .karaoke-unit.karaoke-lit{
     color:var(--chant);
   }
-  .lyric-line.active.is-chant .lyric-jp .karaoke-unit.karaoke-current,
-  .lyric-line.active.is-chant .lyric-romaji .karaoke-unit.karaoke-current{
+  .lyric-line.active.is-chant:not(.chant-partial) .lyric-jp .karaoke-unit.karaoke-current,
+  .lyric-line.active.is-chant:not(.chant-partial) .lyric-romaji .karaoke-unit.karaoke-current,
+  .lyric-line.active.is-chant.chant-partial .seg-chant .karaoke-unit.karaoke-current{
     text-shadow:0 0 7px rgba(245,148,44,.55);
   }
   /* 拍手＋合唱的混合行，行內拍手圖示仍固定保留藍色；只有文字跟著合唱色高亮。 */
@@ -1763,7 +1777,8 @@
   .lyric-line.active.is-chant .lyric-romaji .ico-clap .spark{
     color:var(--clap);
   }
-  .lyric-line.is-chant .lyric-jp rt{ color:rgba(245,210,145,.9); }
+  .lyric-line.is-chant:not(.chant-partial) .lyric-jp rt,
+  .lyric-line.is-chant.chant-partial .lyric-jp .seg-chant rt{ color:rgba(245,210,145,.9); }
   .lyric-zh{
     display:block;
     font-size:clamp(15px,4.2vw,17px);
