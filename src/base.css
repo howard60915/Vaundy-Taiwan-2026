@@ -2618,7 +2618,7 @@
     .song-fixed-top .video-wrap{padding:0 36px;}
   }
 
-  /* ---------- 東京/首爾場參考歌單（劇透頁） ----------
+  /* ---------- 東京/首爾歌單（劇透頁） ----------
      첫 화면에는 경고만 보이고, 스크롤을 내려야 곡 목록이 드러난다. */
   .menu-row.spoiler .info-toggle-icon{
     background:none;

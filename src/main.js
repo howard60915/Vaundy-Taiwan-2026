@@ -94,7 +94,7 @@ const SYNC_INTERVAL_MS   = 100;
 /* 지금 폰에 깔려 있는 화면이 몇 번째 판인지 알려 주는 표시.
    새로 올렸는데 화면이 그대로일 때, 옛 판이 남아 있는지 바로 확인할 수 있다.
    sw.js 의 CACHE_VERSION 과 같이 올려 주세요. */
-const BUILD = "v1.8.5";
+const BUILD = "v1.8.6";
 
 const REPO_URL = "https://github.com/watain666/Vaundy-Taiwan-2026";
 const FEEDBACK_URL = "https://www.threads.com/@brainginger/post/DdiLWztgen9";
@@ -1017,7 +1017,7 @@ function renderHome(){
         </a>
         <button class="menu-chip spoiler" type="button" id="setlist-btn">
           <span class="chip-ico warn">${WARN_SVG}</span>
-          <span class="chip-label">東京/首爾參考歌單</span>
+          <span class="chip-label">東京/首爾歌單</span>
           <span class="chip-note">含劇透</span>
         </button>
       </div>
@@ -1383,7 +1383,7 @@ function paintSetlist(){
 
   const countEl = document.getElementById("setlist-count");
   if (countEl) countEl.textContent = isOrder
-    ? `東京/首爾參考 ${SETLIST_TOKYO.items.length} 首・共 ${total} 首`
+    ? `東京/首爾 ${SETLIST_TOKYO.items.length} 首・共 ${total} 首`
     : `共 ${total} 首`;
 
   const metaEl = document.getElementById("setlist-mode-meta");
@@ -1399,9 +1399,9 @@ function paintSetlist(){
 
   const note = document.getElementById("setlist-note");
   if (note) note.innerHTML = isOrder
-    ? `※ 這是整理自粉絲紀錄的非官方東京/首爾參考歌單，首爾場順序與東京場相同；台北場實際演出順序仍以官方公告為準。<br>
+    ? `※ 這是整理自粉絲紀錄的非官方東京/首爾歌單，首爾場順序與東京場相同；台北場實際演出順序仍以官方公告為準。<br>
        ※ 日期不同而有變化的曲目，已分為<b>六</b>・<b>日</b>。`
-    : `※ 這是整理自粉絲紀錄的非官方東京/首爾參考歌單，首爾場順序與東京場相同；台北場實際演出順序仍以官方公告為準。<br>
+    : `※ 這是整理自粉絲紀錄的非官方東京/首爾歌單，首爾場順序與東京場相同；台北場實際演出順序仍以官方公告為準。<br>
        ※ 演出順序與日期差異曲目皆已隱藏。想查看完整內容，請在上方點選<b>演出順序</b>。`;
 
   app.querySelectorAll(".set-mode").forEach(b=>{
