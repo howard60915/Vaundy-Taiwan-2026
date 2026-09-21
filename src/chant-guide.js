@@ -190,8 +190,8 @@ export const JP_CHANT_GUIDES = {
     ],
     chantTimes: [55, 154],
     chantSegments: [
-      { time: 67.5, text: "キャトルミューティレイション", romaji: "キャトルミューティレイション" },
-      { time: 167,  text: "キャトルミューティレイション", romaji: "キャトルミューティレイション" },
+      { time: 67.5, text: "キャトルミューティレイション", romaji: "kyatorumyūtireishon" },
+      { time: 167,  text: "キャトルミューティレイション", romaji: "kyatorumyūtireishon" },
       { time: 183,  text: "oh yeah",                  romaji: "oh yeah" }
     ]
   },
