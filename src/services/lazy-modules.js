@@ -1,15 +1,24 @@
-import { FURIGANA_CORRECTIONS } from "../furigana-corrections.js";
+import { FURIGANA_CORRECTIONS, ROMAJI_CORRECTIONS } from "../furigana-corrections.js";
 
 let furiganaPromise = null;
 let karaokeSourcesPromise = null;
 let furiganaCorrectionsApplied = false;
 
 function applyFuriganaCorrections(){
-  if (!window.JP_FURIGANA || furiganaCorrectionsApplied) return;
-  window.JP_FURIGANA = Object.freeze({
-    ...window.JP_FURIGANA,
-    ...FURIGANA_CORRECTIONS
-  });
+  if (furiganaCorrectionsApplied) return;
+  if (window.JP_FURIGANA){
+    window.JP_FURIGANA = Object.freeze({
+      ...window.JP_FURIGANA,
+      ...FURIGANA_CORRECTIONS
+    });
+  }
+  if (window.JP_ROMAJI){
+    window.JP_ROMAJI = Object.freeze({
+      ...window.JP_ROMAJI,
+      ...ROMAJI_CORRECTIONS
+    });
+  }
+  if (!window.JP_FURIGANA && !window.JP_ROMAJI) return;
   furiganaCorrectionsApplied = true;
 }
 

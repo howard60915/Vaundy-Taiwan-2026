@@ -5,6 +5,7 @@
  * are not changed globally.
  */
 export const FURIGANA_CORRECTIONS = Object.freeze({
+  "[clap]聞かせてくれよ 聞きたいんだ": "[clap]<ruby>聞<rt>き</rt></ruby>かせてくれよ <ruby>聞<rt>き</rt></ruby>きたいんだ",
   "[clap]君に似合うんだよ ずっと見ていたいよ": "[clap]<ruby>君<rt>きみ</rt></ruby>に<ruby>似合<rt>にあ</rt></ruby>うんだよ ずっと<ruby>見<rt>み</rt></ruby>ていたいよ",
   "[wave]君がいつも  歌う怪獣の歌": "[wave]<ruby>君<rt>きみ</rt></ruby>がいつも  <ruby>歌<rt>うた</rt></ruby>う<ruby>怪獣<rt>かいじゅう</rt></ruby>の<ruby>歌<rt>うた</rt></ruby>",
   "[wave]君に出会えるからまた夏で話そう": "[wave]<ruby>君<rt>きみ</rt></ruby>に<ruby>出会<rt>であ</rt></ruby>えるからまた<ruby>夏<rt>なつ</rt></ruby>で<ruby>話<rt>はな</rt></ruby>そう",
@@ -29,4 +30,9 @@ export const FURIGANA_CORRECTIONS = Object.freeze({
   "[clap]口をはにかみ、涙流すから": "[clap]<ruby>口<rt>くち</rt></ruby>をはにかみ、<ruby>涙<rt>なみだ</rt></ruby><ruby>流<rt>なが</rt></ruby>すから",
   "[clap]四六時中グダグダと チクチクが流れる": "[clap]<ruby>四<rt>し</rt></ruby><ruby>六<rt>ろく</rt></ruby><ruby>時<rt>じ</rt></ruby><ruby>中<rt>ちゅう</rt></ruby>グダグダと チクチクが<ruby>流<rt>なが</rt></ruby>れる",
   "[wave]道が違うのよ アナタ": "[wave]<ruby>道<rt>みち</rt></ruby>が<ruby>違<rt>ちが</rt></ruby>うのよ アナタ"
+});
+
+export const ROMAJI_CORRECTIONS = Object.freeze({
+  "[clap]聞かせてくれよ 聞きたいんだ": "[clap]kika se te kure yo kiki tai n da",
+  "もっと": "motto"
 });
