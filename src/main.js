@@ -74,6 +74,7 @@ let showJapanese = store("horo-show-japanese") !== "0";
 let showChinese = store("horo-show-chinese") !== "0";
 const storedChantVersion = store("horo-chant-version");
 let chantVersion = storedChantVersion === "kr" ? "kr" : DEFAULT_CHANT_VERSION;
+let chantNotesExpanded = false;
 // 卡拉OK 預設關閉；若使用者曾手動選擇，則沿用保存的設定。
 let karaokeEnabled = store("horo-karaoke") === "1";
 let lastActiveIdx = -1;
@@ -94,7 +95,7 @@ const SYNC_INTERVAL_MS   = 100;
 /* 지금 폰에 깔려 있는 화면이 몇 번째 판인지 알려 주는 표시.
    새로 올렸는데 화면이 그대로일 때, 옛 판이 남아 있는지 바로 확인할 수 있다.
    sw.js 의 CACHE_VERSION 과 같이 올려 주세요. */
-const BUILD = "v1.8.6";
+const BUILD = "v1.8.7";
 
 const REPO_URL = "https://github.com/watain666/Vaundy-Taiwan-2026";
 const FEEDBACK_URL = "https://www.threads.com/@brainginger/post/DdiLWztgen9";
@@ -275,10 +276,12 @@ function renderChantNotes(song = currentSong){
     ? guide.notes.filter(note => typeof note === "string" && note.trim())
     : [];
 
-  button.hidden = notes.length === 0;
-  button.classList.remove("active");
-  button.setAttribute("aria-expanded", "false");
-  panel.hidden = true;
+  const hasNotes = notes.length > 0;
+  const expanded = hasNotes && chantNotesExpanded;
+  button.hidden = !hasNotes;
+  button.classList.toggle("active", expanded);
+  button.setAttribute("aria-expanded", expanded ? "true" : "false");
+  panel.hidden = !expanded;
   list.innerHTML = notes.map(note => `<li>${escapeHtml(note)}</li>`).join("");
 }
 
@@ -310,6 +313,7 @@ document.addEventListener("click", event => {
   const panel = document.getElementById(button.getAttribute("aria-controls") || "chant-notes");
   if (!panel) return;
   const open = button.getAttribute("aria-expanded") !== "true";
+  chantNotesExpanded = open;
   button.classList.toggle("active", open);
   button.setAttribute("aria-expanded", open ? "true" : "false");
   panel.hidden = !open;
