@@ -27,29 +27,66 @@ export const JP_CHANT_GUIDES = {
   KaijuNoHanauta: {
     notes: [
       "「もっと」「ねぇ もっと」請大聲喊；「君がいつも」也可以直接指向 Vaundy。",
-      "第一段「落ちてく過去は鮮明で……」整段一起唱；後段的「眠れない夜に」系列也跟著唱。"
+      "第一段「落ちてく過去は鮮明で……」整段一起唱；後段只跟著「眠れない夜に／眠らない夜を／眠くないまだね」這些標色回應詞。"
     ],
-    chantTimes: [42.5, 58.5, 93.5, 110, 123.5, 127, 130, 143, 161, 175.5, 178.5, 182, 188.5, 191.5, 195, 201, 203.5, 206.5, 213.5, 216.5, 219.5]
+    chantTimes: [123.5, 127, 130, 201, 203.5, 206.5, 213.5, 216.5, 219.5],
+    chantSegments: [
+      { time: 42.5,  text: "もっと",       romaji: "motto" },
+      { time: 58.5,  text: "君がいつも",   romaji: "kimi ga itsumo" },
+      { time: 93.5,  text: "もっと",       romaji: "motto" },
+      { time: 110,   text: "君がいつも",   romaji: "kimi ga itsumo" },
+      { time: 143,   text: "ねぇ、もっと", romaji: "nē, motto" },
+      { time: 161,   text: "君がいつも",   romaji: "kimi ga itsumo" },
+      { time: 175.5, text: "眠れない夜に", romaji: "nemure nai yoru ni" },
+      { time: 178.5, text: "眠らない夜を", romaji: "nemura nai yoru o" },
+      { time: 182,   text: "眠くないまだね", romaji: "nemuku nai mada ne" },
+      { time: 188.5, text: "眠れない夜に", romaji: "nemure nai yoru ni" },
+      { time: 191.5, text: "眠らない夜を", romaji: "nemura nai yoru o" },
+      { time: 195,   text: "眠くないまだね", romaji: "眠くないまだね" }
+    ]
   },
   hanaurana: {
     notes: [
       "副歌以雙手高舉、左右揮手為主；開心時可以跳。",
       "這首日本版不要求整段跟唱，拍手與揮手盡情做即可。"
     ],
-    chantTimes: [46.5, 53.5, 110.5, 118, 160, 163, 166.5]
+    chantTimes: [46.5, 53.5, 110.5, 118],
+    chantSegments: [
+      { time: 160,   text: "何年経っても妄想が", romaji: "nan nen tatte mo mōsō ga" },
+      { time: 163,   text: "もうこんなに",       romaji: "mō konnani" },
+      { time: 166.5, text: "花が散るほど",       romaji: "hana ga chiru hodo" }
+    ]
   },
   Backlight: {
     notes: [
       "副歌一起大聲唱；最後一段兩次都是「悪党ふっ飛ばして」，請特別注意。"
     ],
-    chantTimes: [46.5, 53.5, 56.5, 59, 66.5, 70, 126, 132.5, 136, 139, 146, 149.5, 193.5, 200.5, 204, 207, 214, 217]
+    chantTimes: [46.5, 59, 126, 139, 193.5, 207],
+    chantSegments: [
+      { time: 53.5,  text: "ないやないやないや",   romaji: "nai ya na iya na iya" },
+      { time: 56.5,  text: "ないさないさ",         romaji: "nai sa nai sa" },
+      { time: 66.5,  text: "ないな ないなないな",   romaji: "nai na nai na nai na" },
+      { time: 70,    text: "ないさないさ",         romaji: "nai sa nai sa" },
+      { time: 132.5, text: "ないやないやないや",   romaji: "nai ya na iya na iya" },
+      { time: 136,   text: "ないさないさ",         romaji: "nai sa nai sa" },
+      { time: 146,   text: "ないな ないなないな",   romaji: "nai na nai na nai na" },
+      { time: 149.5, text: "ないさないさ",         romaji: "nai sa nai sa" },
+      { time: 200.5, text: "ないやないやないや",   romaji: "nai ya na iya na iya" },
+      { time: 204,   text: "ないさないさ",         romaji: "nai sa nai sa" },
+      { time: 214,   text: "ないな ないなないな",   romaji: "nai na nai na nai na" },
+      { time: 217,   text: "ないさないさ",         romaji: "nai sa nai sa" }
+    ]
   },
   Tomoshibi: {
     notes: [
       "日本版最重要的兩個應援點是「ねぇ」與「けど まだ」，請大聲喊出來。",
       "拍手跟著鼓聲即可。"
     ],
-    chantTimes: [118.5, 140]
+    chantTimes: [],
+    chantSegments: [
+      { time: 118.5, text: "ねぇ",   romaji: "nē" },
+      { time: 140,   text: "けどまだ", romaji: "けどまだ" }
+    ]
   },
   Jonetsu: {
     notes: [
@@ -69,14 +106,40 @@ export const JP_CHANT_GUIDES = {
     notes: [
       "「愛で」與「日々が」請大聲唱出來，三次副歌都一樣。"
     ],
-    chantTimes: [60.5, 68.5, 77, 85, 142, 150, 158.5, 166.5, 209.5, 217, 225.5, 233.5]
+    chantTimes: [],
+    chantSegments: [
+      { time: 60.5,  text: "愛で",  romaji: "ai de" },
+      { time: 68.5,  text: "日々が", romaji: "hibi ga" },
+      { time: 77,    text: "愛で",  romaji: "ai de" },
+      { time: 85,    text: "日々が", romaji: "hibi ga" },
+      { time: 142,   text: "愛で",  romaji: "ai de" },
+      { time: 150,   text: "日々が", romaji: "hibi ga" },
+      { time: 158.5, text: "愛で",  romaji: "ai de" },
+      { time: 166.5, text: "日々が", romaji: "hibi ga" },
+      { time: 209.5, text: "愛で",  romaji: "ai de" },
+      { time: 217,   text: "日々が", romaji: "hibi ga" },
+      { time: 225.5, text: "愛で",  romaji: "ai de" },
+      { time: 233.5, text: "日々が", romaji: "hibi ga" }
+    ]
   },
   Homunculus: {
     notes: [
       "開頭與尾段的「Oh-yeah, yeah-yeah-yeah」請盡量吸飽氣唱。",
       "副歌的「ホムンクルス!」最重要；其他「イチ・ニー・サン」等應援能跟上就好。"
     ],
-    chantTimes: [8, 27, 59, 62.5, 65.5, 68.5, 73, 109.5, 112.5, 115.5, 119, 123, 209, 227.5]
+    chantTimes: [59, 62.5, 65.5, 109.5, 112.5, 115.5],
+    chantSegments: [
+      { time: 68.5,  text: "行くぜ喝采気は満ちた", romaji: "iku ze kassai ki wa michi ta" },
+      { time: 68.5,  text: "ホムンクルス",         romaji: "homunkurusu" },
+      { time: 73,    text: "ホムンクルス",         romaji: "homunkurusu" },
+      { time: 119,   text: "行くぜ喝采俺が来た",   romaji: "iku ze kassai ore ga ki ta" },
+      { time: 119,   text: "ホムンクルス",         romaji: "homunkurusu" },
+      { time: 179.5, text: "確かめ合うかより",     romaji: "tashikame au ka yori" },
+      { time: 187.5, text: "思い合えるより",       romaji: "omoi aeru yori" },
+      { time: 190.5, text: "振り剥がせるかより",   romaji: "furi haga seru ka yori" },
+      { time: 196.5, text: "時に歩み合うかより",   romaji: "tokini ayumi au ka yori" },
+      { time: 200,   text: "抱きしめ合えるより",   romaji: "dakishime aeru yori" }
+    ]
   },
   Tokimeki: {
     notes: [
@@ -90,14 +153,34 @@ export const JP_CHANT_GUIDES = {
       "日本版需要跟上的聲音應援很多，B 段先抓準進入時機，後半能整段跟上就很厲害。",
       "✋⬆️ 是高舉雙手的動作；✋⤴️ 是高舉手、手心向前拋。"
     ],
-    chantTimes: [32.5, 35.5, 40, 45.5, 48.5, 51.5, 54.5, 58.5, 61.5, 64.5, 68, 88.5, 94, 97.5, 100.5, 104, 107.5, 111, 114, 118.5, 123.5, 127, 129.5, 133, 136.5, 140, 142.5, 146, 156.5, 164.5, 168, 170.5, 174, 177.5, 180.5, 183.5, 187]
+    chantTimes: [32.5, 51.5, 64.5, 111, 129.5, 142.5, 170.5, 183.5],
+    chantSegments: [
+      { time: 35.5,  text: "Hu-Hu-Hu-Hu",             romaji: "Hu-Hu-Hu-Hu" },
+      { time: 40,    text: "CHAINSAW BLOOD",           romaji: "CHAINSAW BLOOD" },
+      { time: 54.5,  text: "CHAINSAW BLOOD",           romaji: "CHAINSAW BLOOD" },
+      { time: 88.5,  text: "(ハイッ ハイッ)",          romaji: "(haitsu haitsu)" },
+      { time: 94,    text: "CHAINSAW is 使える愛の手",  romaji: "CHAINSAW is tsukaeru ai no te" },
+      { time: 114,   text: "Hu-Hu-Hu-Hu",              romaji: "Hu-Hu-Hu-Hu" },
+      { time: 118.5, text: "CHAINSAW BLOOD",           romaji: "CHAINSAW BLOOD" },
+      { time: 133,   text: "CHAINSAW BLOOD",           romaji: "CHAINSAW BLOOD" },
+      { time: 156.5, text: "CHAINSAW BLOOD",           romaji: "CHAINSAW BLOOD" },
+      { time: 174,   text: "CHAINSAW BLOOD",           romaji: "CHAINSAW BLOOD" }
+    ]
   },
   Fukakouryoku: {
     notes: [
       "副歌一起唱「Welcome to the dirty night」。",
       "「あれ なに」「それ なに」「愛で」是熟悉 VAWS 應援的人會喊的回應。"
     ],
-    chantTimes: [41.5, 54, 59, 64, 69.5, 85, 97.5, 102.5, 108, 113, 121.5, 154.5, 176.5, 181.5, 187, 192]
+    chantTimes: [54, 59, 64, 69.5, 97.5, 102.5, 108, 113, 176.5, 181.5, 187, 192],
+    chantSegments: [
+      { time: 41.5,  text: "あれ、なに", romaji: "are, nani" },
+      { time: 41.5,  text: "それ、なに", romaji: "sore, nani" },
+      { time: 85,    text: "あれ、なに", romaji: "are, nani" },
+      { time: 85,    text: "それ、なに", romaji: "sore, nani" },
+      { time: 121.5, text: "愛で",       romaji: "ai de" },
+      { time: 154.5, text: "愛で",       romaji: "ai de" }
+    ]
   },
   soramimi: {
     notes: [
@@ -122,27 +205,80 @@ export const JP_CHANT_GUIDES = {
       "第二次 Whoa, whoa, whoa, yeah, yeah 是三次，接著唱 True, true, true。",
       "副歌以「先生」與「全然」交互喊為主。"
     ],
-    chantTimes: [14, 30.5, 47, 50.5, 59, 61.5, 67.5, 104, 106.5, 113, 115.5, 127, 159.5, 163, 171.5, 174.5, 180.5, 183, 194.5]
+    chantTimes: [],
+    chantSegments: [
+      { time: 30.5,  text: "ふふふ",                romaji: "fufufu" },
+      { time: 47,    text: "先生",                  romaji: "sensei" },
+      { time: 50.5,  text: "全然",                  romaji: "zenzen" },
+      { time: 59,    text: "先生",                  romaji: "sensei" },
+      { time: 61.5,  text: "全然",                  romaji: "zenzen" },
+      { time: 104,   text: "先生",                  romaji: "sensei" },
+      { time: 106.5, text: "全然",                  romaji: "zenzen" },
+      { time: 159.5, text: "先生",                  romaji: "sensei" },
+      { time: 163,   text: "全然",                  romaji: "zenzen" },
+      { time: 171.5, text: "先生",                  romaji: "sensei" },
+      { time: 174.5, text: "全然",                  romaji: "zenzen" },
+      { time: 183,   text: "Wha wha wha yeah yeah", romaji: "Wha wha wha yeah yeah" },
+      { time: 194.5, text: "Wha wha wha yeah yeah", romaji: "Wha wha wha yeah yeah" }
+    ]
   },
   ZuttoLoveSong: {
     notes: [
       "副歌可以跟 Vaundy 一樣高舉手比 1。",
       "「あの日から消えない……」有人會跟鼓聲連打兩下，屬於自由選擇。"
     ],
-    chantTimes: [53, 56.5, 63.5, 67.5, 70, 152, 156, 162.5, 167, 169, 183]
+    chantTimes: [],
+    chantSegments: [
+      { time: 53,   text: "キャトルミューティレイション", romaji: "kyatorumyūtireishon" },
+      { time: 67.5, text: "キャトルミューティレイション", romaji: "キャトルミューティレイション" },
+      { time: 152,  text: "キャトルミューティレイション", romaji: "kyatorumyūtireishon" },
+      { time: 167,  text: "キャトルミューティレイション", romaji: "キャトルミューティレイション" },
+      { time: 183,  text: "oh yeah",                  romaji: "oh yeah" }
+    ]
   },
   Yobigoe: {
     notes: [
-      "副歌可以整段跟唱；如果想簡化，只要跟著唱「チェンジ」也可以。"
+      "依橘色標記跟唱；如果想簡化，只要跟著唱「チェンジ」也可以。"
     ],
-    chantTimes: [32.5, 41, 44.5, 50.5, 54.5, 58.5, 64.5, 68, 72.5, 78.5, 122.5, 127.5, 130.5, 133.5, 136, 140, 144, 148, 166.5, 170.5, 175, 178.5, 184, 188, 192, 197, 202.5, 206.5, 212]
+    chantTimes: [32.5, 41, 54.5, 68, 140, 144, 166.5, 175, 184, 188, 202.5],
+    chantSegments: [
+      { time: 44.5,  text: "チェンジ",       romaji: "chenji" },
+      { time: 50.5,  text: "輝いて",         romaji: "kagayai te" },
+      { time: 58.5,  text: "チェンジ",       romaji: "chenji" },
+      { time: 64.5,  text: "輝いて",         romaji: "kagayai te" },
+      { time: 72.5,  text: "チェンジ",       romaji: "chenji" },
+      { time: 78.5,  text: "今チェンジ",     romaji: "kon chenji" },
+      { time: 133.5, text: "今チェンジ",     romaji: "kon chenji" },
+      { time: 136,   text: "今 チェンジ",    romaji: "ima chenji" },
+      { time: 148,   text: "チェンジ",       romaji: "chenji" },
+      { time: 178.5, text: "今 チェンジ",    romaji: "ima chenji" },
+      { time: 197,   text: "チェンジ",       romaji: "chenji" },
+      { time: 197,   text: "輝いて",         romaji: "kagayai te" },
+      { time: 206.5, text: "チェンジ",       romaji: "chenji" },
+      { time: 212,   text: "どんな夜も Ah~", romaji: "donna yoru mo Ah ~" },
+      { time: 212,   text: "今チェンジ",     romaji: "kon chenji" }
+    ]
   },
   TokyoFlash: {
     notes: [
       "副歌以「できてるできてる」「悪くない悪くない」與「何処へ行こう」作為回應，並配合前後揮手。",
       "中段需要安靜的地方不要拍手。"
     ],
-    chantTimes: [22.5, 37.5, 42, 47, 52, 63, 69, 73, 79, 82.5, 103.5, 118, 123, 128, 133, 137.5, 143.5, 150, 153.5, 159.5, 163.5, 195, 201.5, 205, 211, 215, 221, 225, 230.5, 234.5]
+    chantTimes: [],
+    chantSegments: [
+      { time: 22.5,  text: "できてるできてる",         romaji: "deki teru deki teru" },
+      { time: 37.5,  text: "わるくないわるくない",       romaji: "わるくないわるくない" },
+      { time: 69,    text: "どこへ行こうどこへ行こう",     romaji: "doko e ikō doko e ikō" },
+      { time: 79,    text: "どこへ行こうどこへ行こう",     romaji: "doko e ikō doko e ikō" },
+      { time: 103.5, text: "できてるできてる",         romaji: "deki teru deki teru" },
+      { time: 118,   text: "わるくないわるくない",       romaji: "わるくないわるくない" },
+      { time: 150,   text: "どこへ行こうどこへ行こう",     romaji: "doko e ikō doko e ikō" },
+      { time: 159.5, text: "どこへ行こうどこへ行こう",     romaji: "doko e ikō doko e ikō" },
+      { time: 201.5, text: "どこへ行こうどこへ行こう",     romaji: "doko e ikō doko e ikō" },
+      { time: 211,   text: "どこへ行こうどこへ行こう",     romaji: "doko e ikō doko e ikō" },
+      { time: 221,   text: "どこへ行こうどこへ行こう",     romaji: "doko e ikō doko e ikō" },
+      { time: 230.5, text: "どこへ行こうどこへ行こう",     romaji: "doko e ikō doko e ikō" }
+    ]
   },
   TodomenoIchigeki: {
     notes: [

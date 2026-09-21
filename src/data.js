@@ -693,7 +693,7 @@ export const SONGS = [
       { time: 57.5, jp: "[clap]先天的だ過敏なこの衝動",        ko: [{ text: "센텐테키다", tag: "chant"}, { text: " 카빈 나 코노 쇼-도-", tag: "clap" }],         tr: "與生俱來，這種敏感的衝動" },
       { time: 61.5, jp: "[clap]珍回答だ僕は気にしないけど",        ko: [{ text: "칭카이토- 다", tag: "chant"}, { text: " 보쿠 와 키니 시나이 케도", tag: "clap" }],         tr: "就算答錯了，我也不在乎" },
       { time: 65, jp: "[clap]1発打ったこのビートを鳴らしてよさぁ",        ko: [{ text: "잇파츠 웃타", tag: "chant"}, { text: " 코노 비-토 오 나라시테요 사-", tag: "clap" }],         tr: "讓我們回應一下這一拍" },
-      { time: 70, ko: [{ text: "[wave](jump) Distance This Dance? x 2 ", tag: "chant"}], pic: "wave_jump"},
+      { time: 70, jp: "[wave](jump) Distance This Dance? x 2", ko: [{ text: "[wave](jump) Distance This Dance? x 2 ", tag: "chant"}], pic: "wave_jump"},
       { time: 94.5, jp: "[clap]今日も愉快だねでも何もかもが不快だね",        ko: [{ text: "쿄- 모 유카이 다네", tag: "chant"}, { text: " 데모 나니모카모 가 후카이 다네", tag: "clap" }],         tr: "今天也很愉快，但一切都很不愉快。" },
       { time: 98, jp: "[clap]だいたいそんなもん自己満たちが踊る世界だもん",        ko: [{ text: "다이타이 손나 몬", tag: "chant"}, { text: " 지코만 타치 가 오도루 세카이 다몬", tag: "clap" }],         tr: "粗略地說，這是一個自我滿足的人跳舞的世界" },
       { time: 102, jp: "[clap]で、まぁいいかな",        ko: [{ text: "데 마- 이- 카나", tag: "chant"}],         tr: "所以，好吧，我想這沒關係。" },
@@ -707,7 +707,7 @@ export const SONGS = [
       { time: 135.5, jp: "[clap]先天的だ過敏なこの衝動",        ko: [{ text: "센텐테키다", tag: "chant"}, { text: " 카빈 나 코노 쇼-도-", tag: "clap" }],         tr: "與生俱來，這種敏感的衝動" },
       { time: 139, jp: "[clap]珍回答だ僕は気にしないけど",        ko: [{ text: "칭카이토- 다", tag: "chant"}, { text: " 보쿠 와 키니 시나이 케도", tag: "clap" }],         tr: "就算答錯了，我也不在乎" },
       { time: 142.5, jp: "[clap]1発打ったこのビートを鳴らしてよさぁ",        ko: [{ text: "잇파츠 웃타 코노 비-토 오 나라시테요 사-", tag: "chant"}],         tr: "讓我們回應一下這一拍" },
-      { time: 147.5, ko: [{ text: "[wave](jump) Distance This Dance? x 4 ", tag: "chant"}], pic: "wave_jump"},
+      { time: 147.5, jp: "[wave](jump) Distance This Dance? x 4", ko: [{ text: "[wave](jump) Distance This Dance? x 4 ", tag: "chant"}], pic: "wave_jump"},
 
     ],
   },
