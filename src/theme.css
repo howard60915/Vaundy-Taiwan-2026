@@ -579,14 +579,24 @@ button{touch-action:manipulation;}
 .song-page .lyric-jp,
 .song-page .lyric-romaji,
 .song-page .lyric-zh{color:var(--ui-muted);}
-.song-page .lyric-line.is-chant .lyric-jp,
-.song-page .lyric-line.is-chant .lyric-romaji{color:var(--chant);}
-.song-page .lyric-line.is-chant .lyric-jp .karaoke-unit,
-.song-page .lyric-line.is-chant .lyric-romaji .karaoke-unit{color:rgba(245,148,44,.72);}
-.song-page .lyric-line.active.is-chant .lyric-jp .karaoke-unit.karaoke-lit,
-.song-page .lyric-line.active.is-chant .lyric-romaji .karaoke-unit.karaoke-lit{color:var(--chant);}
-.song-page .lyric-line.active.is-chant .lyric-jp .karaoke-unit.karaoke-current,
-.song-page .lyric-line.active.is-chant .lyric-romaji .karaoke-unit.karaoke-current{
+.song-page .lyric-line.is-chant:not(.chant-partial) .lyric-jp,
+.song-page .lyric-line.is-chant:not(.chant-partial) .lyric-romaji,
+.song-page .lyric-line.is-chant.chant-partial .lyric-body .seg-chant{color:var(--chant);}
+.song-page .lyric-line:not(.is-chant) .lyric-jp .seg-chant,
+.song-page .lyric-line:not(.is-chant) .lyric-romaji .seg-chant,
+.song-page .lyric-line:not(.is-chant) .lyric-zh .seg-chant,
+.song-page .lyric-line:not(.chant-partial) .lyric-jp .seg-chant,
+.song-page .lyric-line:not(.chant-partial) .lyric-romaji .seg-chant,
+.song-page .lyric-line:not(.chant-partial) .lyric-zh .seg-chant{color:inherit;}
+.song-page .lyric-line.is-chant:not(.chant-partial) .lyric-jp .karaoke-unit,
+.song-page .lyric-line.is-chant:not(.chant-partial) .lyric-romaji .karaoke-unit,
+.song-page .lyric-line.is-chant.chant-partial .seg-chant .karaoke-unit{color:rgba(245,148,44,.72);}
+.song-page .lyric-line.active.is-chant:not(.chant-partial) .lyric-jp .karaoke-unit.karaoke-lit,
+.song-page .lyric-line.active.is-chant:not(.chant-partial) .lyric-romaji .karaoke-unit.karaoke-lit,
+.song-page .lyric-line.active.is-chant.chant-partial .seg-chant .karaoke-unit.karaoke-lit{color:var(--chant);}
+.song-page .lyric-line.active.is-chant:not(.chant-partial) .lyric-jp .karaoke-unit.karaoke-current,
+.song-page .lyric-line.active.is-chant:not(.chant-partial) .lyric-romaji .karaoke-unit.karaoke-current,
+.song-page .lyric-line.active.is-chant.chant-partial .seg-chant .karaoke-unit.karaoke-current{
   text-shadow:0 0 7px rgba(245,148,44,.55);
 }
 .song-page .lyric-line.active.is-chant .lyric-jp .ico-clap,
@@ -594,7 +604,8 @@ button{touch-action:manipulation;}
   color:var(--chant);
   filter:drop-shadow(rgba(245,148,44,.45) 0 0 6px);
 }
-.song-page .lyric-line.is-chant .lyric-jp rt{color:rgba(245,210,145,.9);}
+.song-page .lyric-line.is-chant:not(.chant-partial) .lyric-jp rt,
+.song-page .lyric-line.is-chant.chant-partial .lyric-jp .seg-chant rt{color:rgba(245,210,145,.9);}
 .song-page .lyric-line.has-chant-segment .lyric-jp .chant-segment,
 .song-page .lyric-line.has-chant-segment .lyric-romaji .chant-segment,
 .song-page .lyric-line.has-chant-segment .lyric-jp .chant-segment .karaoke-unit,
