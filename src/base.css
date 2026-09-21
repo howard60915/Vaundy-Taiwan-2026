@@ -415,6 +415,10 @@
     font-size:11px;
     letter-spacing:.02em;
   }
+  .song-mark-unit{
+    font-size:10px;
+    opacity:.85;
+  }
   /* 떼창 — 숫자까지 보여 주는 알약 */
   .song-mark.chant{
     padding:0 8px 0 6px;

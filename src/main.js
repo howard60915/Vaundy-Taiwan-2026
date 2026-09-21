@@ -2336,7 +2336,7 @@ function paintChantBar(){
   const touch = window.matchMedia && window.matchMedia("(hover: none)").matches;
   if (msg) msg.textContent = chantDone ? "結束・按播放即可從頭開始"
                            : (touch ? "左右滑動切換段落" : "用 ← → 切換段落");
-  if (count) count.textContent = Math.max(1, chantIdx + 1) + " / " + blocks.length;
+  if (count) count.textContent = `第 ${Math.max(1, chantIdx + 1)} / ${blocks.length} 段`;
   if (prev) prev.disabled = chantIdx <= 0;
   if (next) next.disabled = chantIdx >= blocks.length - 1;
 }
@@ -3502,7 +3502,7 @@ function sortedSongs(){
 function songMarksHtml(song){
   const m = songMarks(song);
   let html = "";
-  if (m.chant) html += `<span class="song-mark chant" title="${chantVersionLabel()}大合唱 ${m.chant} 行" aria-label="${chantVersionLabel()}大合唱 ${m.chant} 行">${useSvg("i-mic")}<b>${m.chant}</b></span>`;
+  if (m.chant) html += `<span class="song-mark chant" title="${chantVersionLabel()}大合唱 ${m.chant} 行" aria-label="${chantVersionLabel()}大合唱 ${m.chant} 行">${useSvg("i-mic")}<b>${m.chant}</b><span class="song-mark-unit">行</span></span>`;
   if (m.clap)  html += `<span class="song-mark dot clap common" title="拍手" aria-label="拍手">${useSvg("i-hand")}</span>`;
   if (m.wave)  html += `<span class="song-mark dot wave common" title="揮手" aria-label="揮手">${useSvg("i-wave")}</span>`;
   if (m.jump)  html += `<span class="song-mark dot jump" title="跳躍" aria-label="跳躍">${useSvg("i-jump")}</span>`;
