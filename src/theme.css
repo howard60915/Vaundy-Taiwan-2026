@@ -805,3 +805,101 @@ button{touch-action:manipulation;}
    讓新增的歌詞切換按鈕加入後，兩種模式的控制列高度一致。 */
 .song-page .chant-toggle .venue-label{ display:none; }
 .song-page .chant-toggle{ padding-left:9px;padding-right:9px; }
+
+
+/* ── 手機橫屏：沿用桌面式左右分割 ──────────────────────────────
+   手機橫屏的 CSS 寬度常小於 900px，原本會誤用直屏單欄版型；
+   但橫屏的可用高度很短，影片一旦佔滿上方，歌詞就完全沒有空間。
+   這裡用「橫向＋短高度」作為桌面式版型的第二個入口。 */
+@media (orientation: landscape) and (max-height: 600px){
+  .song-page .song-topbar{
+    padding: max(5px, env(safe-area-inset-top, 0px))
+             max(8px, env(safe-area-inset-right, 0px))
+             5px
+             max(8px, env(safe-area-inset-left, 0px));
+    gap:6px;
+  }
+
+  .song-page .song-body{
+    flex-direction:row;
+    min-height:0;
+    align-items:stretch;
+  }
+
+  /* 影片欄以可容納 16:9 影片的寬度為上限，避免超短橫屏時影片溢出。 */
+  .song-page .song-fixed-top{
+    flex:0 0 min(58%, calc(177.78svh - 183px));
+    min-width:0;
+    min-height:0;
+    display:flex;
+    flex-direction:column;
+    justify-content:center;
+    overflow:hidden;
+    padding:6px 0;
+  }
+
+  .song-page .song-fixed-top .video-wrap{
+    flex:0 0 auto;
+    width:100%;
+    max-width:none;
+    margin:0;
+    padding:0 8px;
+  }
+
+  .song-page .video-frame{
+    padding-top:0;
+    aspect-ratio:16 / 9;
+  }
+
+  /* 這些提示在桌面版有價值，但短橫屏應把空間留給影片和歌詞。 */
+  .song-page .lyrics-note,
+  .song-page .lyrics-legend,
+  .song-page .chant-notes-panel,
+  .song-page .chant-version-control,
+  .song-page .chant-version-note{
+    display:none;
+  }
+
+  .song-page .lyrics-pane{
+    flex:1 1 auto;
+    min-width:0;
+    min-height:0;
+    border-left:1px solid var(--ui-line);
+    border-top:0;
+    background:var(--ui-surface);
+  }
+
+  .song-page .lyrics-pane > .lyrics-scroll{
+    border:0;
+  }
+
+  .song-page .lyrics-list{
+    margin-top:0;
+    padding:8px 10px 20px;
+  }
+
+  .song-page .lyric-line{
+    gap:8px;
+    padding:10px 8px;
+  }
+
+  .song-page .lyric-jp,
+  .song-page .lyric-romaji{
+    font-size:12px;
+  }
+
+  .song-page .lyric-zh{
+    font-size:15px;
+  }
+
+  /* 控制列固定留在最底部；項目太多時可左右滑動，不會折成第二排。 */
+  .song-page .player-controls{
+    flex-wrap:nowrap;
+    justify-content:flex-start;
+    overflow-x:auto;
+    overscroll-behavior-x:contain;
+    -webkit-overflow-scrolling:touch;
+    padding-left:max(8px, env(safe-area-inset-left, 0px));
+    padding-right:max(8px, env(safe-area-inset-right, 0px));
+  }
+}
