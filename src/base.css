@@ -1433,6 +1433,11 @@
   }
   .chant-notes-toggle:hover,
   .chant-notes-toggle:focus-visible{color:var(--cream);}
+  .chant-notes-toggle .chant-notes-label{
+    font-size:12px !important;
+    font-weight:400;
+    line-height:1;
+  }
   .chant-notes-toggle[hidden],
   .chant-notes-panel[hidden]{display:none;}
   .chant-notes-chevron{display:inline-flex;transition:transform .18s ease;}

@@ -95,7 +95,7 @@ const SYNC_INTERVAL_MS   = 100;
 /* 지금 폰에 깔려 있는 화면이 몇 번째 판인지 알려 주는 표시.
    새로 올렸는데 화면이 그대로일 때, 옛 판이 남아 있는지 바로 확인할 수 있다.
    sw.js 의 CACHE_VERSION 과 같이 올려 주세요. */
-const BUILD = "v1.8.8";
+const BUILD = "v1.8.9";
 
 const REPO_URL = "https://github.com/watain666/Vaundy-Taiwan-2026";
 const FEEDBACK_URL = "https://www.threads.com/@brainginger/post/DdiLWztgen9";
@@ -2015,7 +2015,7 @@ function buildSongShell(){
             <span class="legend-item"><span class="legend-icon clap">${INLINE_ICONS.clap}</span>拍手</span>
             <span class="legend-item"><span class="legend-icon wave">${INLINE_ICONS.wave}</span>揮手</span>
             <button type="button" class="chant-notes-toggle" id="chant-notes-toggle" aria-expanded="false" aria-controls="chant-notes" title="查看這首歌的日本版應援提示" hidden>
-              <span>應援說明</span><span class="chant-notes-chevron" aria-hidden="true">${CHEVRON_SVG}</span>
+              <span class="chant-notes-label">應援說明</span><span class="chant-notes-chevron" aria-hidden="true">${CHEVRON_SVG}</span>
             </button>
           </div>
           <div class="chant-notes-panel" id="chant-notes" hidden>
