@@ -66,7 +66,8 @@ export const SONGS = [
       /* ↓↓ 짤방 예시 — 이 세 줄 동안 손 흔들기 사진이 가사 위에 떠 있습니다.
             다른 줄에도 똑같이  pic: "이름"  만 붙이면 됩니다. ↓↓ */
       { time: 17, jp: [{ text: "[wave]Hu Hu Hu Ya Ya x3", tag: "chant" }],        ko: [{ text: "Hu Hu Hu Ya Ya x3", tag: "chant" }],                                                    tr: [{ text: "Hu Hu Hu Ya Ya x3", tag: "chant" }] },
-      { time: 22.5, jp: [{ text: "[wave]それは、軽やかな魔法" }, { text: " Hu Hu Hu Ya Ya x2", tag: "chant" }], ko: [{ text: "소레와 카로야카나 마호-" }, { text: " Hu Hu Hu Ya Ya x2", tag: "chant" }],               tr: [{ text: "那是道、讓人感到輕鬆的魔法" }, { text: " Hu Hu Hu Ya Ya x2", tag: "chant" }]},
+      { time: 22.5, jp: "[wave]それは、軽やかな魔法", ko: [{ text: "소레와 카로야카나 마호-" }],               tr: "那是道、讓人感到輕鬆的魔法" },
+      { time: 26.5, jp: "Hu Hu Hu Ya Ya x2", ko: [{ text: "Hu Hu Hu Ya Ya x2", tag: "chant" }],               tr: "Hu Hu Hu Ya Ya x2" },
       { time: 29,  jp: "[wave]美しいほど 止まらぬCRY", ko: "우츠쿠시이 호도 토마라누 CRY",                                 tr: "美得讓人動容　停止不了的CRY"},
       { time: 33, jp: [{ text: "[wave]DA-DADADADA ", tag: "chant" }, { text: "Just dancing tonight" }], ko: [{ text: "DA-DADADADA ", tag: "chant" }, { text: "Just dancing tonight"}],               tr: [{ text: "DA-DADADADA ", tag: "chant" }, { text: "Just dancing tonight" }] , pic: "wave_dada" },
       { time: 38, jp: [{ text: "[wave](DA-DA-DA) ", tag: "chant" }, { text: "涙流して笑えばいいさ" }], ko: [{ text: "(DA-DA-DA) ", tag: "chant" }, { text: "나미다 나가시테 와라에바 이-사"}],               tr: [{ text: "(DA-DA-DA) ", tag: "chant" }, { text: "就這麼喜極而泣吧" }] },
@@ -77,7 +78,8 @@ export const SONGS = [
       { time: 73, jp: "[clap]聞こえてるのは 確かな ときめきで歌う魔法",        ko: [{ text: "키코에테루노와 타시카나 토키메키데 히카루\u00a0마호", tag: "clap" }],                                                     tr: "我所聽見的是　確實的　靠Tokimeki歌唱的魔法" },
       { time: 81, jp: "[clap]思い当たるのは 誰かの 鼻歌のイントロ",        ko: [{ text: "오모이아타루노와 다레카노 하나우타노 인토로", tag: "clap" }],                                                     tr: "我所想起的是　他人所　哼唱而出的Intro" },
       { time: 89, jp: [{ text: "[wave] Hu Hu Hu Ya Ya x3", tag: "chant" }],        ko: [{ text: "Hu Hu Hu Ya Ya x3", tag: "chant" }],                                                    tr: [{ text: "Hu Hu Hu Ya Ya x3", tag: "chant" }] },
-      { time: 95, jp: [{ text: "[wave]それは、鮮やかな魔法" }, { text: " Hu Hu Hu Ya Ya x2", tag: "chant" }], ko: [{ text: "소레와 아자야카나 마호-" }, { text: " Hu Hu Hu Ya Ya x2", tag: "chant" }],               tr: [{ text: "那是道、鮮明的魔法" }, { text: " Hu Hu Hu Ya Ya x2", tag: "chant" }] },
+      { time: 95, jp: "[wave]それは、鮮やかな魔法", ko: [{ text: "소레와 아자야카나 마호-" }],               tr: "那是道、鮮明的魔法" },
+      { time: 99, jp: "Hu Hu Hu Ya Ya x2", ko: [{ text: "Hu Hu Hu Ya Ya x2", tag: "chant" }],               tr: "Hu Hu Hu Ya Ya x2" },
       { time: 101,  jp: "[wave]聞こえてるのは", ko: "키코에테루노와",                                 tr: "我所聽見的是" },
       { time: 105, jp: [{ text: "[wave]DA-DADADADA ", tag: "chant" }, { text: "Just dancing tonight" }], ko: [{ text: "DA-DADADADA ", tag: "chant" }, { text: "Just dancing tonight"}],               tr: [{ text: "DA-DADADADA ", tag: "chant" }, { text: "Just dancing tonight" }] , pic: "wave_dada"},
       { time: 110, jp: [{ text: "[wave](DA-DA-DA) ", tag: "chant" }, { text: "涙流して笑えばいいさ" }], ko: [{ text: "(DA-DA-DA) ", tag: "chant" }, { text: "나미다 나가시테 와라에바 이-사"}],               tr: [{ text: "(DA-DA-DA) ", tag: "chant" }, { text: "就這麼喜極而泣吧" }] },
