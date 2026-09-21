@@ -93,7 +93,7 @@ const SYNC_INTERVAL_MS   = 100;
 /* 지금 폰에 깔려 있는 화면이 몇 번째 판인지 알려 주는 표시.
    새로 올렸는데 화면이 그대로일 때, 옛 판이 남아 있는지 바로 확인할 수 있다.
    sw.js 의 CACHE_VERSION 과 같이 올려 주세요. */
-const BUILD = "v1.7.5";
+const BUILD = "v1.8.0";
 
 const REPO_URL = "https://github.com/watain666/Vaundy-Taiwan-2026";
 const FEEDBACK_URL = "https://www.threads.com/@brainginger/post/DdiLWztgen9";
@@ -223,6 +223,15 @@ function applyChantVersionUi(){
   document.querySelectorAll("[data-chant-version-label]").forEach(el => {
     el.textContent = chantVersionLabel();
   });
+  const compact = document.getElementById("chant-version-btn");
+  if (compact){
+    const isKorea = chantVersion === "kr";
+    compact.classList.toggle("active", isKorea);
+    compact.setAttribute("aria-pressed", isKorea ? "true" : "false");
+    compact.setAttribute("aria-label", `切換應援版本：目前${chantVersionLabel()}，點擊切換`);
+    const value = compact.querySelector(".chant-version-value");
+    if (value) value.textContent = CHANT_VERSIONS[chantVersion].shortLabel;
+  }
 }
 
 function renderChantVersionNote(song = currentSong){
@@ -240,8 +249,7 @@ function renderChantVersionNote(song = currentSong){
     return;
   }
 
-  const notes = (guide.notes || []).map(note => `<li>${escapeHtml(note)}</li>`).join("");
-  el.innerHTML = `<b>${CHANT_VERSIONS.jp.label}</b>：${notes ? `<ul>${notes}</ul>` : ""}`;
+  el.innerHTML = `<b>${CHANT_VERSIONS.jp.label}</b>：歌詞旁的麥克風圖示就是日本版大合唱段落。`;
 }
 
 document.addEventListener("click", event => {
@@ -1946,8 +1954,6 @@ function buildSongShell(){
             <span class="legend-item"><span class="legend-icon clap">${INLINE_ICONS.clap}</span>拍手</span>
             <span class="legend-item"><span class="legend-icon wave">${INLINE_ICONS.wave}</span>揮手</span>
           </div>
-          ${chantVersionControlHtml("song")}
-          <div class="chant-version-note" id="chant-version-note" role="status" aria-live="polite"></div>
         </div>
 
         <div class="lyrics-pane">
@@ -1982,6 +1988,10 @@ function buildSongShell(){
         <button class="venue-toggle chant-toggle" id="chant-btn" aria-pressed="false" aria-label="開啟／關閉只聽大合唱">
           <span class="chant-ico">${STATIC_MIC_SVG}</span>
           <span class="venue-label">只聽大合唱</span>
+        </button>
+        <button class="venue-toggle chant-version-toggle" id="chant-version-btn" aria-pressed="false" aria-label="切換應援版本">
+          <span class="venue-label">應援</span>
+          <span class="chant-version-value">${CHANT_VERSIONS[chantVersion].shortLabel}</span>
         </button>
         <button class="venue-toggle" id="venue-btn" aria-label="開啟／關閉簡潔模式">
           <span class="venue-label">簡潔模式</span>
@@ -2149,6 +2159,9 @@ function buildSongShell(){
 
   document.getElementById("chant-btn").addEventListener("click", ()=>{
     setChantOnly(!chantOnly);
+  });
+  document.getElementById("chant-version-btn").addEventListener("click", ()=>{
+    setChantVersion(chantVersion === "jp" ? "kr" : "jp");
   });
   document.getElementById("chant-off").addEventListener("click", ()=>{ setChantOnly(false); });
   document.getElementById("chant-prev").addEventListener("click", ()=>{ chantStep(-1); });
@@ -3384,7 +3397,7 @@ function lineIsChant(line, song = currentSong){
 
 const CHANT_LEAD_SEC  = 1.2;   // 떼창 직전 한 박자 먼저 들어가 준비할 시간
 const CHANT_TAIL_SEC  = 0.6;   // 마지막 글자가 잘리지 않도록 뒤에 남기는 여유
-const CHANT_GAP_MERGE = 7;     // 떼창 사이가 이보다 짧으면 끊지 않고 이어서 듣는다
+const CHANT_GAP_MERGE = 2.5;   // 실제로 붙어 있는 짧은 공백만 이어서 듣는다
 const chantBlockCache = new Map();
 
 /* 곡을 훑어 떼창 구간 목록을 만든다. [{from,to,start,end}, …]

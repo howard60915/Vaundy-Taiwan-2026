@@ -1747,6 +1747,14 @@
   .chant-toggle:not(.active) .chant-ico{ opacity:.7; }
   .chant-toggle.active{ background:var(--gold-soft); }
   .chant-toggle.active .venue-label, .chant-toggle.active .chant-ico{ color:#1b1109; }
+  .chant-version-toggle .chant-version-value{
+    font-family:var(--font-tw-sans);
+    font-size:11px;
+    letter-spacing:.02em;
+    color:var(--gold-soft);
+    white-space:nowrap;
+  }
+  .chant-version-toggle.active .chant-version-value{ color:var(--gold); }
   .chant-bar-label{
     font-family:var(--font-tw-sans);
     font-size:11.5px;letter-spacing:.02em;
