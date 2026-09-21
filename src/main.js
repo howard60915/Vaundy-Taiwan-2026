@@ -264,6 +264,24 @@ function renderChantVersionNote(song = currentSong){
   el.innerHTML = `<b>${CHANT_VERSIONS.jp.label}</b>：歌詞旁的麥克風圖示就是日本版大合唱段落。`;
 }
 
+function renderChantNotes(song = currentSong){
+  const button = document.getElementById("chant-notes-toggle");
+  const panel = document.getElementById("chant-notes");
+  const list = document.getElementById("chant-notes-list");
+  if (!button || !panel || !list) return;
+
+  const guide = chantVersion === "jp" ? chantGuideFor(song, "jp") : null;
+  const notes = guide && Array.isArray(guide.notes)
+    ? guide.notes.filter(note => typeof note === "string" && note.trim())
+    : [];
+
+  button.hidden = notes.length === 0;
+  button.classList.remove("active");
+  button.setAttribute("aria-expanded", "false");
+  panel.hidden = true;
+  list.innerHTML = notes.map(note => `<li>${escapeHtml(note)}</li>`).join("");
+}
+
 document.addEventListener("click", event => {
   const button = event.target.closest("[data-chant-version]");
   if (!button) return;
@@ -284,6 +302,17 @@ document.addEventListener("click", event => {
     }
   }
   setChantVersion(chantVersion === "jp" ? "kr" : "jp");
+});
+
+document.addEventListener("click", event => {
+  const button = event.target.closest("#chant-notes-toggle");
+  if (!button || button.hidden) return;
+  const panel = document.getElementById(button.getAttribute("aria-controls") || "chant-notes");
+  if (!panel) return;
+  const open = button.getAttribute("aria-expanded") !== "true";
+  button.classList.toggle("active", open);
+  button.setAttribute("aria-expanded", open ? "true" : "false");
+  panel.hidden = !open;
 });
 
 function pad(n){ return String(n).padStart(2,"0"); }
@@ -1981,6 +2010,13 @@ function buildSongShell(){
             <span class="legend-item"><span class="legend-icon chant">${INLINE_ICONS.mic}</span>大合唱</span>
             <span class="legend-item"><span class="legend-icon clap">${INLINE_ICONS.clap}</span>拍手</span>
             <span class="legend-item"><span class="legend-icon wave">${INLINE_ICONS.wave}</span>揮手</span>
+            <button type="button" class="chant-notes-toggle" id="chant-notes-toggle" aria-expanded="false" aria-controls="chant-notes" title="查看這首歌的日本版應援提示" hidden>
+              <span>應援說明</span><span class="chant-notes-chevron" aria-hidden="true">${CHEVRON_SVG}</span>
+            </button>
+          </div>
+          <div class="chant-notes-panel" id="chant-notes" hidden>
+            <ul class="chant-notes-list" id="chant-notes-list"></ul>
+            <a href="${CHANT_REFERENCE_URL}" target="_blank" rel="noopener">Canva《VAUNDY 應援教學》↗</a>
           </div>
         </div>
 
@@ -2306,6 +2342,7 @@ function setChantVersion(next){
   if (currentSong) {
     repaintChantVersionLines(currentSong);
     renderChantVersionNote(currentSong);
+    renderChantNotes(currentSong);
     syncChantUi();
     paintChantBar();
     if (chantOnly && currentChantBlocks().length) jumpToChant(0);
@@ -2565,6 +2602,7 @@ function renderSong(song){
 
   applyChantVersionUi();
   renderChantVersionNote(song);
+  renderChantNotes(song);
   syncChantUi();                         // 떼창만 듣기 상태 반영
   paintChantBar();
   applyVenueMode();                      // 단축모드 상태 반영 (글자 크기 등)
@@ -2638,6 +2676,15 @@ function applyVenueMode(){
   page.classList.toggle("venue", venueMode);
   page.classList.toggle("offline", !navigator.onLine);
   if (btn) btn.classList.toggle("active", venueMode);
+  if (venueMode){
+    const notesButton = document.getElementById("chant-notes-toggle");
+    const notesPanel = document.getElementById("chant-notes");
+    if (notesButton) {
+      notesButton.classList.remove("active");
+      notesButton.setAttribute("aria-expanded", "false");
+    }
+    if (notesPanel) notesPanel.hidden = true;
+  }
   updatePlayButton();
   placeTipPic();                 // 짤방 자리도 모드에 맞게 옮긴다
   // 글자 크기가 달라지므로 가운데 기준을 다시 잡고 현재 소절로 맞춘다

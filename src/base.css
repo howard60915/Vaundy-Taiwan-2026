@@ -1396,7 +1396,7 @@
 
   .lyrics-legend{
     max-width:720px;margin:14px auto 12px;padding:0 16px;
-    display:flex;gap:18px;flex-wrap:wrap;
+    display:flex;align-items:center;gap:18px;flex-wrap:wrap;
   }
   .legend-item{
     display:flex;align-items:center;gap:7px;
@@ -1416,6 +1416,47 @@
     font-family:var(--font-tw-sans);font-weight:400;
     color:var(--chant);
     margin:0 1px;
+  }
+  .chant-notes-toggle{
+    display:inline-flex;align-items:center;gap:5px;
+    min-height:28px;
+    margin-left:auto;
+    padding:4px 9px;
+    border:1px solid var(--stage-line);
+    border-radius:999px;
+    background:var(--stage-raised);
+    color:var(--stage-muted);
+    font:inherit;font-size:11.5px;
+    line-height:1;
+    white-space:nowrap;
+    cursor:pointer;
+  }
+  .chant-notes-toggle:hover,
+  .chant-notes-toggle:focus-visible{color:var(--cream);}
+  .chant-notes-toggle[hidden],
+  .chant-notes-panel[hidden]{display:none;}
+  .chant-notes-chevron{display:inline-flex;transition:transform .18s ease;}
+  .chant-notes-chevron svg{width:13px;height:13px;}
+  .chant-notes-toggle.active .chant-notes-chevron{transform:rotate(180deg);}
+  .chant-notes-panel{
+    max-width:720px;
+    margin:-2px auto 12px;
+    padding:10px 16px;
+    border:1px solid var(--stage-line);
+    border-radius:10px;
+    background:var(--stage-raised);
+    color:var(--stage-muted);
+    font-size:11.5px;
+    line-height:1.6;
+  }
+  .chant-notes-list{margin:0;padding-left:18px;}
+  .chant-notes-list li + li{margin-top:3px;}
+  .chant-notes-panel a{
+    display:inline-block;
+    margin-top:7px;
+    color:var(--cream);
+    text-decoration:underline;
+    text-underline-offset:2px;
   }
   .song-page .chant-version-control{
     max-width:720px;
@@ -2469,6 +2510,7 @@
   .song-page.venue .watch-on-yt,
   .song-page.venue .lyrics-note,
   .song-page.venue .lyrics-legend,
+  .song-page.venue .chant-notes-panel,
   .song-page.venue .venue-hint{ display:none; }
   .song-page.venue .lyrics-scroll{
     flex:1;min-height:0;

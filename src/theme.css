@@ -626,6 +626,22 @@ button{touch-action:manipulation;}
 .song-page .watch-on-yt,
 .song-page .lyrics-note,
 .song-page .legend-item{color:var(--ui-muted);}
+.song-page .chant-notes-toggle{
+  border-color:var(--ui-line);
+  background:var(--ui-raised);
+  color:var(--ui-muted);
+}
+.song-page .chant-notes-toggle:hover,
+.song-page .chant-notes-toggle:focus-visible,
+.song-page .chant-notes-toggle.active{color:var(--ui-text);background:var(--ui-hover);}
+.song-page .chant-notes-panel{
+  border-color:var(--ui-line);
+  background:var(--ui-surface);
+  color:var(--ui-muted);
+}
+.song-page .chant-notes-panel a{color:var(--ui-text);}
+.song-page .chant-notes-panel a:hover,
+.song-page .chant-notes-panel a:focus-visible{color:var(--teal);}
 .song-page .lyric-line.active{background:var(--ui-hover);box-shadow:none;}
 .song-page .song-sheet-item:hover,
 .song-page .song-sheet-item:focus-visible{background:var(--ui-hover);}
