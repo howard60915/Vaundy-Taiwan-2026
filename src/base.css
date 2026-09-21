@@ -590,6 +590,24 @@
     color:var(--page-muted,var(--muted));
     font-size:11px;
   }
+  .chant-version-current{
+    appearance:none;
+    padding:3px 7px;
+    border:1px solid transparent;
+    border-radius:7px;
+    background:var(--page-control,var(--surface-raised));
+    font:inherit;
+    line-height:1.2;
+    cursor:pointer;
+    transition:border-color .15s ease,background .15s ease,color .15s ease;
+  }
+  .chant-version-current:hover,
+  .chant-version-current:focus-visible{
+    border-color:var(--ui-accent,var(--gold));
+    color:var(--page-ink,var(--cream));
+    outline:none;
+  }
+  .chant-version-current:active{ transform:scale(.98); }
   .chant-differences ul{
     display:grid;
     gap:8px;

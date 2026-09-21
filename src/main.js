@@ -221,7 +221,7 @@ function chantVersionIcon(version = chantVersion){
 
 function chantSourceInfoHtml(){
   return `<span class="chant-source-info">
-    <b>應援版本說明</b>：預設為日本版，可在歌詞上方切換日本版／韓國版；切換後大合唱標記會同步更新。<br>
+    <b>應援版本說明</b>：預設為日本版，可用應援版本按鈕切換日本版／韓國版；切換後大合唱標記會同步更新。<br>
     <a href="${CHANT_REFERENCE_URL}" target="_blank" rel="noopener">日本版參考：Canva《VAUNDY 應援教學》↗</a>
   </span>`;
 }
@@ -235,15 +235,15 @@ function applyChantVersionUi(){
   document.querySelectorAll("[data-chant-version-flag]").forEach(el => {
     el.innerHTML = chantVersionIcon();
   });
-  const compact = document.getElementById("chant-version-btn");
-  if (compact){
+  document.querySelectorAll("[data-chant-version-toggle]").forEach(button => {
     const isKorea = chantVersion === "kr";
-    compact.classList.toggle("active", isKorea);
-    compact.setAttribute("aria-pressed", isKorea ? "true" : "false");
-    compact.setAttribute("aria-label", `切換應援版本：目前${chantVersionLabel()}，點擊切換`);
-    const value = compact.querySelector(".chant-version-value");
+    button.classList.toggle("active", isKorea);
+    button.setAttribute("aria-pressed", isKorea ? "true" : "false");
+    button.setAttribute("aria-label", `切換應援版本：目前${chantVersionLabel()}，點擊切換`);
+    button.title = "點擊切換日本版／韓國版";
+    const value = button.querySelector(".chant-version-value");
     if (value) value.innerHTML = chantVersionIcon();
-  }
+  });
 }
 
 function renderChantVersionNote(song = currentSong){
@@ -270,6 +270,12 @@ document.addEventListener("click", event => {
   const next = button.dataset.chantVersion;
   if (next !== "jp" && next !== "kr") return;
   setChantVersion(next);
+});
+
+document.addEventListener("click", event => {
+  const button = event.target.closest("[data-chant-version-toggle]");
+  if (!button) return;
+  setChantVersion(chantVersion === "jp" ? "kr" : "jp");
 });
 
 function pad(n){ return String(n).padStart(2,"0"); }
@@ -1110,7 +1116,9 @@ function renderGuide(){
           <section class="chant-differences" aria-labelledby="chant-differences-title">
             <div class="chant-differences-head">
               <h2 id="chant-differences-title">日本版／韓國版差異</h2>
-              <span class="chant-differences-current">目前 <span data-chant-version-flag aria-hidden="true">${chantVersionIcon()}</span></span>
+              <button type="button" class="chant-differences-current chant-version-current" id="guide-chant-version-btn" data-chant-version-toggle aria-pressed="false" aria-label="切換應援版本：目前${chantVersionLabel()}，點擊切換">
+                目前 <span data-chant-version-flag aria-hidden="true">${chantVersionIcon()}</span>
+              </button>
             </div>
             <ul>${CHANT_DIFFERENCES.map(item => `<li>${escapeHtml(item)}</li>`).join("")}</ul>
             <p class="chant-differences-footnote">未列入日本版歌單的歌曲會暫沿用現有標記，現場仍以 Vaundy 與觀眾的即時引導為準。</p>
@@ -2001,7 +2009,7 @@ function buildSongShell(){
           <span class="chant-ico">${STATIC_MIC_SVG}</span>
           <span class="venue-label">只聽大合唱</span>
         </button>
-        <button class="venue-toggle chant-version-toggle" id="chant-version-btn" aria-pressed="false" aria-label="切換應援版本">
+        <button class="venue-toggle chant-version-toggle" id="chant-version-btn" data-chant-version-toggle aria-pressed="false" aria-label="切換應援版本">
           <span class="venue-label">應援版本</span>
           <span class="chant-version-value">${chantVersionIcon()}</span>
         </button>
@@ -2171,9 +2179,6 @@ function buildSongShell(){
 
   document.getElementById("chant-btn").addEventListener("click", ()=>{
     setChantOnly(!chantOnly);
-  });
-  document.getElementById("chant-version-btn").addEventListener("click", ()=>{
-    setChantVersion(chantVersion === "jp" ? "kr" : "jp");
   });
   document.getElementById("chant-off").addEventListener("click", ()=>{ setChantOnly(false); });
   document.getElementById("chant-prev").addEventListener("click", ()=>{ chantStep(-1); });
