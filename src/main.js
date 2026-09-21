@@ -275,6 +275,14 @@ document.addEventListener("click", event => {
 document.addEventListener("click", event => {
   const button = event.target.closest("[data-chant-version-toggle]");
   if (!button) return;
+  event.preventDefault();
+  event.stopPropagation();
+  if (button.id === "guide-chant-version-btn") {
+    pendingVideoId = null;
+    if (player && typeof player.pauseVideo === "function") {
+      try { player.pauseVideo(); } catch(e){}
+    }
+  }
   setChantVersion(chantVersion === "jp" ? "kr" : "jp");
 });
 
@@ -2721,6 +2729,7 @@ window.addEventListener("offline", ()=>{ if (songShellBuilt) applyVenueMode(); }
 function leaveSongView(){
   stopSyncTimer();
   stopActiveGuard();
+  pendingVideoId = null;
   closeSongSheet();
   hideTipPic();
   if (lyricObserver){ lyricObserver.disconnect(); lyricObserver = null; }
@@ -3588,11 +3597,11 @@ function onPlayerReady(){
   if (status) status.hidden = true;
   try { player.unMute(); player.setVolume(userVolume); } catch(e){}
   startVolumeWatch();
-  if (pendingVideoId) {                   // 준비되기 전에 고른 곡이 있으면 지금 재생
+  if (pendingVideoId && isSongViewActive()) { // 歌曲頁仍在前景才執行排隊播放
     const id = pendingVideoId;
     pendingVideoId = null;
     playVideoFor(id);
-  }
+  } else pendingVideoId = null;
 }
 
 function onPlayerError(){
