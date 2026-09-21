@@ -613,6 +613,8 @@ button{touch-action:manipulation;}
   color:var(--chant);
 }
 .song-page .lyric-line.has-chant-segment .lyric-jp .chant-segment rt{color:rgba(245,210,145,.9);}
+.song-page .lyric-line.has-chant-segment .lyric-jp .chant-segment.break-before,
+.song-page .lyric-line.has-chant-segment .lyric-romaji .chant-segment.break-before{display:block;}
 .song-page .lyric-line.active.has-chant-segment .lyric-jp .chant-segment .karaoke-unit.karaoke-lit,
 .song-page .lyric-line.active.has-chant-segment .lyric-romaji .chant-segment .karaoke-unit.karaoke-lit{
   color:var(--chant);

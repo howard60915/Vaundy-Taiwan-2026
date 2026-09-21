@@ -31,9 +31,9 @@ export const JP_CHANT_GUIDES = {
     ],
     chantTimes: [123.5, 127, 130, 201, 203.5, 206.5, 213.5, 216.5, 219.5],
     chantSegments: [
-      { time: 42.5,  text: "もっと",       romaji: "motto" },
+      { time: 42.5,  text: "もっと",       romaji: "motto",       breakBefore: true },
       { time: 58.5,  text: "君がいつも",   romaji: "kimi ga itsumo" },
-      { time: 93.5,  text: "もっと",       romaji: "motto" },
+      { time: 93.5,  text: "もっと",       romaji: "motto",       breakBefore: true },
       { time: 110,   text: "君がいつも",   romaji: "kimi ga itsumo" },
       { time: 143,   text: "ねぇ、もっと", romaji: "nē, motto" },
       { time: 161,   text: "君がいつも",   romaji: "kimi ga itsumo" },

@@ -94,7 +94,7 @@ const SYNC_INTERVAL_MS   = 100;
 /* 지금 폰에 깔려 있는 화면이 몇 번째 판인지 알려 주는 표시.
    새로 올렸는데 화면이 그대로일 때, 옛 판이 남아 있는지 바로 확인할 수 있다.
    sw.js 의 CACHE_VERSION 과 같이 올려 주세요. */
-const BUILD = "v1.8.3";
+const BUILD = "v1.8.4";
 
 const REPO_URL = "https://github.com/watain666/Vaundy-Taiwan-2026";
 const FEEDBACK_URL = "https://www.threads.com/@brainginger/post/DdiLWztgen9";
@@ -2983,7 +2983,7 @@ function chantSegmentText(segment, mode = "jp"){
   return String(mode === "romaji" ? (segment.romaji || segment.text) : segment.text || "");
 }
 
-function wrapChantMarkup(markup, target){
+function wrapChantMarkup(markup, target, options = {}){
   const value = String(markup || "");
   const needle = String(target || "");
   if (!needle || !value || typeof document === "undefined") return value;
@@ -3033,7 +3033,7 @@ function wrapChantMarkup(markup, target){
       ? parent
       : null;
     const span = document.createElement("span");
-    span.className = "chant-segment";
+    span.className = `chant-segment${options.breakBefore ? " break-before" : ""}`;
 
     if (ruby){
       ruby.parentNode.insertBefore(span, ruby);
@@ -3056,7 +3056,7 @@ function wrapChantMarkup(markup, target){
 function renderChantAwareLine(str, line, song, render, mode){
   let markup = render(str);
   jpChantSegmentsForLine(line, song).forEach(segment => {
-    markup = wrapChantMarkup(markup, chantSegmentText(segment, mode));
+    markup = wrapChantMarkup(markup, chantSegmentText(segment, mode), segment);
   });
   return markup;
 }
