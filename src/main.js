@@ -1100,8 +1100,8 @@ function renderGuide(){
           <p>選擇歌曲，搭配影片查看歌詞與大合唱重點</p>
           <div class="song-legend">
             <span class="legend-item"><span class="legend-icon chant">${INLINE_ICONS.mic}</span>大合唱 <b class="legend-num">12</b> 行</span>
-            <span class="legend-item common"><span class="legend-icon clap">${INLINE_ICONS.clap}</span>拍手</span>
-            <span class="legend-item common"><span class="legend-icon wave">${INLINE_ICONS.wave}</span>揮手</span>
+            <span class="legend-item"><span class="legend-icon clap">${INLINE_ICONS.clap}</span>拍手</span>
+            <span class="legend-item"><span class="legend-icon wave">${INLINE_ICONS.wave}</span>揮手</span>
             <span class="legend-item"><span class="legend-icon jump">${INLINE_ICONS.jump}</span>跳躍</span>
             <span class="legend-item"><span class="legend-icon spin">${INLINE_ICONS.spin}</span>轉臂</span>
           </div>

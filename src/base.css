@@ -601,7 +601,6 @@
     line-height:1.55;
   }
   @media (max-width:520px){
-    .song-legend .legend-item.common{ opacity:.45; }
     .chant-version-control{ align-items:stretch; flex-direction:column; }
     .chant-version-control-label{ padding:0 3px; }
     .chant-version-segment{ width:100%; }
