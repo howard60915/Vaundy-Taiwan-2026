@@ -1,4 +1,0 @@
-interface:
-  display_name: "Deploy Vaundy"
-  short_description: "Release Vaundy with version bump, scoped commit, push, and link"
-  default_prompt: "Use $deploy-vaundy to publish the Vaundy project version."
