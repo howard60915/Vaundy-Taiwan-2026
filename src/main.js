@@ -95,7 +95,7 @@ const SYNC_INTERVAL_MS   = 100;
 /* 지금 폰에 깔려 있는 화면이 몇 번째 판인지 알려 주는 표시.
    새로 올렸는데 화면이 그대로일 때, 옛 판이 남아 있는지 바로 확인할 수 있다.
    sw.js 의 CACHE_VERSION 과 같이 올려 주세요. */
-const BUILD = "v1.8.19";
+const BUILD = "v1.8.20";
 
 const REPO_URL = "https://github.com/watain666/Vaundy-Taiwan-2026";
 const FEEDBACK_URL = "https://www.threads.com/@brainginger/post/DdiLWztgen9";
@@ -155,6 +155,13 @@ const LYRIC_LEAD_SEC     = 0.35;
 const SCROLL_DURATION_MS = 260;
 const KARAOKE_TAIL_SEC   = 0.08;
 const KARAOKE_UNIT_BEATS  = 0.65;
+const PLAYBACK_RATE_OPTIONS = Object.freeze([1, 1.1, 1.25, 1.5, 2]);
+const PLAYBACK_RATE_STORAGE_KEY = "horo-playback-rate";
+const storedPlaybackRate = Number(store(PLAYBACK_RATE_STORAGE_KEY));
+let playbackRate = PLAYBACK_RATE_OPTIONS.includes(storedPlaybackRate)
+  ? storedPlaybackRate
+  : 1;
+let availablePlaybackRates = [];
 
 let scrollRafId = null;
 let currentSong = null;
@@ -2053,6 +2060,12 @@ function buildSongShell(){
 
       <div class="player-controls">
         <button class="play-toggle" id="play-toggle" aria-label="播放／暫停">${PLAY_SVG}</button>
+        <label class="playback-rate-control" for="playback-rate">
+          <span class="visually-hidden">播放速度</span>
+          <select class="playback-rate-select" id="playback-rate" aria-label="播放速度：目前x1" title="播放速度">
+            ${PLAYBACK_RATE_OPTIONS.map(rate => "<option value=\"" + rate + "\">" + formatPlaybackRate(rate) + "</option>").join("")}
+          </select>
+        </label>
         <button class="venue-toggle chant-toggle" id="chant-btn" aria-pressed="false" aria-label="開啟／關閉只聽大合唱">
           <span class="chant-ico">${STATIC_MIC_SVG}</span>
           <span class="venue-label">只聽大合唱</span>
@@ -2224,6 +2237,11 @@ function buildSongShell(){
       else player.playVideo();
     } catch(e){}
   });
+
+  document.getElementById("playback-rate").addEventListener("change", event=>{
+    setPlaybackRate(Number(event.currentTarget.value));
+  });
+  updatePlaybackRateUi();
 
   document.getElementById("chant-btn").addEventListener("click", ()=>{
     setChantOnly(!chantOnly);
@@ -2504,7 +2522,7 @@ function applySongTempo(song){
   const bpm = Number(SONG_BPM[song?.id]);
   if (!Number.isFinite(bpm) || bpm <= 0) return;
 
-  const beatSeconds = 60 / bpm;
+  const beatSeconds = 60 / bpm / Math.max(0.01, playbackRate);
   page.style.setProperty("--song-bpm", String(bpm));
   page.style.setProperty("--icon-beat-duration", `${beatSeconds.toFixed(3)}s`);
   page.dataset.bpm = String(bpm);
@@ -3908,6 +3926,83 @@ let pendingVideoId = null;    // 플레이어 준비 전에 눌린 곡
 let userVolume     = 100;     // 사용자가 마지막으로 맞춰 둔 볼륨(곡이 바뀌어도 유지)
 let userMuted      = false;   // 사용자가 직접 음소거해 뒀는지
 let volumeWatchTimer = null;
+let playbackRateRestorePending = false;
+
+function formatPlaybackRate(rate){
+  const value = Number(rate);
+  return "x" + (Number.isInteger(value) ? value : String(value));
+}
+
+function samePlaybackRate(a, b){
+  return Math.abs(Number(a) - Number(b)) < 0.001;
+}
+
+function readAvailablePlaybackRates(){
+  if (!player || typeof player.getAvailablePlaybackRates !== "function") return [];
+  try {
+    const rates = player.getAvailablePlaybackRates();
+    if (!Array.isArray(rates)) return [];
+    return rates
+      .map(Number)
+      .filter(rate => Number.isFinite(rate) && rate > 0)
+      .sort((a, b) => a - b);
+  } catch(e){ return []; }
+}
+
+function closestAvailablePlaybackRate(rate){
+  if (!availablePlaybackRates.length) return rate;
+  const exact = availablePlaybackRates.find(value => samePlaybackRate(value, rate));
+  if (exact !== undefined) return exact;
+
+  // YouTube 會把不支援的速度往 1 的方向取整；這裡先同步 UI，避免
+  // 使用者選了 x1.1 卻看到介面仍顯示 x1.1、實際卻是 x1 的假狀態。
+  const towardNormal = availablePlaybackRates.filter(value => value <= rate);
+  return towardNormal.length ? towardNormal.at(-1) : availablePlaybackRates[0];
+}
+
+function updatePlaybackRateUi(){
+  const select = document.getElementById("playback-rate");
+  if (!select) return;
+
+  const selected = PLAYBACK_RATE_OPTIONS.find(rate => samePlaybackRate(rate, playbackRate));
+  if (selected !== undefined) select.value = String(selected);
+  select.setAttribute("aria-label", "播放速度：目前" + formatPlaybackRate(playbackRate));
+  select.title = "播放速度：" + formatPlaybackRate(playbackRate);
+
+  [...select.options].forEach(option => {
+    option.disabled = availablePlaybackRates.length > 0
+      && !availablePlaybackRates.some(rate => samePlaybackRate(rate, option.value));
+  });
+}
+
+function refreshPlaybackRateOptions(){
+  availablePlaybackRates = readAvailablePlaybackRates();
+  updatePlaybackRateUi();
+}
+
+function applyPlaybackRate(){
+  if (!player || !playerReady) return;
+  refreshPlaybackRateOptions();
+  playbackRate = closestAvailablePlaybackRate(playbackRate);
+  store(PLAYBACK_RATE_STORAGE_KEY, String(playbackRate));
+  updatePlaybackRateUi();
+  applySongTempo(currentSong);
+  playbackRateRestorePending = false;
+  try { player.setPlaybackRate(playbackRate); } catch(e){}
+}
+
+function setPlaybackRate(rate){
+  const requested = PLAYBACK_RATE_OPTIONS.find(value => samePlaybackRate(value, rate));
+  if (requested === undefined) return;
+
+  playbackRate = closestAvailablePlaybackRate(requested);
+  store(PLAYBACK_RATE_STORAGE_KEY, String(playbackRate));
+  updatePlaybackRateUi();
+  applySongTempo(currentSong);
+  if (player && playerReady){
+    try { player.setPlaybackRate(playbackRate); } catch(e){}
+  }
+}
 
 function showVideoStatus(){
   const status = document.getElementById("video-status");
@@ -3937,6 +4032,7 @@ function ensurePlayer(){
     events: {
       'onReady': onPlayerReady,
       'onStateChange': onPlayerStateChange,
+      'onPlaybackRateChange': onPlayerPlaybackRateChange,
       'onError': onPlayerError
     }
   });
@@ -3948,6 +4044,7 @@ function onPlayerReady(){
   const status = document.getElementById("video-status");
   if (status) status.hidden = true;
   try { player.unMute(); player.setVolume(userVolume); } catch(e){}
+  applyPlaybackRate();
   startVolumeWatch();
   if (pendingVideoId && isSongViewActive()) { // 歌曲頁仍在前景才執行排隊播放
     const id = pendingVideoId;
@@ -3962,6 +4059,18 @@ function onPlayerError(){
   if (!status) return;
   status.hidden = false;
   status.textContent = "無法播放影片，請在下方開啟 YouTube。";
+}
+
+function onPlayerPlaybackRateChange(event){
+  const actual = Number(event && event.data);
+  if (!Number.isFinite(actual)) return;
+  if (playbackRateRestorePending && !samePlaybackRate(actual, playbackRate)) return;
+  const matching = PLAYBACK_RATE_OPTIONS.find(rate => samePlaybackRate(rate, actual));
+  if (matching === undefined) return;
+  playbackRate = matching;
+  store(PLAYBACK_RATE_STORAGE_KEY, String(playbackRate));
+  updatePlaybackRateUi();
+  applySongTempo(currentSong);
 }
 
 /* ── 볼륨 기억하기 ────────────────────────────────────────────
@@ -3994,6 +4103,9 @@ function playVideoFor(videoId){
       player.playVideo();
     } else {
       currentVideoId = videoId;
+      availablePlaybackRates = [];
+      playbackRateRestorePending = true;
+      updatePlaybackRateUi();
       player.loadVideoById(videoId);      // loadVideoById 는 바로 재생까지 함
     }
   } catch(e){}
@@ -4025,6 +4137,10 @@ function updatePlayButton(){
 
 function onPlayerStateChange(event) {
   updatePlayButton();
+  if (event.data === YT.PlayerState.PLAYING || event.data === YT.PlayerState.CUED) {
+    // loadVideoById 會把 YouTube 速度重設為 x1，換歌後在影片可播放時恢復選擇。
+    applyPlaybackRate();
+  }
   // 영상이 끝나면 다음 곡으로 (마지막 곡이면 첫 곡으로 되돌아감)
   if (event.data === YT.PlayerState.ENDED) {
     stopSyncTimer();

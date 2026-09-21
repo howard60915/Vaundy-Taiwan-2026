@@ -304,7 +304,12 @@ button{touch-action:manipulation;}
 .song-page .sheet-search .song-search-box:focus-within{outline:2px solid var(--cream);outline-offset:2px;}
 .song-page .song-sheet-item.current{background:rgba(255,255,255,.075);box-shadow:none;}
 .song-page .venue-toggle,
-.song-page .play-toggle{border:0;background:var(--stage-raised);}
+.song-page .play-toggle,
+.song-page .playback-rate-control{border:0;background:var(--stage-raised);}
+.song-page .playback-rate-select{
+  color:var(--gold-soft);
+  color-scheme:dark;
+}
 .song-page .tip-pic-card{border:0;background:var(--stage-raised);}
 
 .setlist-page{
@@ -786,7 +791,8 @@ button{touch-action:manipulation;}
    사이 여백과 글자 크기만 조금 줄여 한 줄에 들어가게 한다. */
 @media (max-width:380px){
   .song-page .player-controls{ gap:6px;padding-left:8px;padding-right:8px; }
-  .song-page .venue-toggle{ padding-left:8px;padding-right:8px; }
+  .song-page .venue-toggle,
+  .song-page .playback-rate-control{ padding-left:8px;padding-right:8px; }
 }
 @media (max-width:340px){
   .song-page .venue-label{ font-size:10px; }
