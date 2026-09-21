@@ -19,16 +19,18 @@
 (function (root) {
   "use strict";
 
-  const CACHE_VERSION = "v1";
+  const CACHE_VERSION = "v2";
   const CACHE_PREFIX = "horo-karaoke-";
   const DEFAULT_WORKER = "https://lyrics.txw.qzz.io";
   const AMLL_API = "https://api.amll.dev";
+  const LRCLIB_API = "https://lrclib.net/api";
   const PROVIDER_ORDER = Object.freeze([
     "Musixmatch RichSync",
     "QQ Music QRC",
     "KuGou KRC",
     "NetEase YRC",
-    "AMLL TTML DB"
+    "AMLL TTML DB",
+    "LRCLIB lyricsfile（逐行時間）"
   ]);
   const pending = new Map();
 
@@ -161,6 +163,61 @@
     return normaliseLines(lines, "Musixmatch RichSync");
   }
 
+  function parseLrclibScalar(value) {
+    const text = String(value == null ? "" : value).trim();
+    if (text === "''" || text === '""') return "";
+    if (text.startsWith("'") && text.endsWith("'")) {
+      return text.slice(1, -1).replace(/''/g, "'");
+    }
+    if (text.startsWith('"') && text.endsWith('"')) {
+      try { return JSON.parse(text); } catch (error) { return text.slice(1, -1); }
+    }
+    return text;
+  }
+
+  function parseLrclibLyricsFile(text) {
+    const lines = [];
+    String(text || "").split(/\r?\n(?=-\s*text:)/).forEach((block) => {
+      const textMatch = block.match(/(?:^|\r?\n)-\s*text:\s*(.*)$/m);
+      const startMatch = block.match(/(?:^|\r?\n)\s*start_ms:\s*(-?\d+(?:\.\d+)?)\s*$/m);
+      const endMatch = block.match(/(?:^|\r?\n)\s*end_ms:\s*(-?\d+(?:\.\d+)?)\s*$/m);
+      if (!textMatch || !startMatch || !endMatch) return;
+      const lineText = parseLrclibScalar(textMatch[1]);
+      const start = Number(startMatch[1]) / 1000;
+      const end = Number(endMatch[1]) / 1000;
+      if (!lineText.trim() || !Number.isFinite(start) || !Number.isFinite(end)) return;
+      lines.push({ start, end, words: [{ text: lineText, start, end }] });
+    });
+    return normaliseLines(lines, "LRCLIB lyricsfile（逐行時間）");
+  }
+
+  function parseLrclibSyncedLyrics(text) {
+    const lines = [];
+    String(text || "").split(/\r?\n/).forEach((rawLine) => {
+      const tags = [...rawLine.matchAll(/\[(\d+):(\d{1,2}(?:\.\d+)?)\]/g)];
+      if (!tags.length) return;
+      const lineText = rawLine.replace(/\[\d+:\d{1,2}(?:\.\d+)?\]/g, "").trim();
+      if (!lineText) return;
+      tags.forEach((tag) => {
+        const start = Number(tag[1]) * 60 + Number(tag[2]);
+        if (Number.isFinite(start)) lines.push({ start, text: lineText });
+      });
+    });
+    lines.sort((a, b) => a.start - b.start);
+    const timed = lines.map((line, index) => {
+      const next = lines[index + 1];
+      const end = next ? Math.max(line.start + 0.04, next.start) : line.start + 4;
+      return { start: line.start, end, words: [{ text: line.text, start: line.start, end }] };
+    });
+    return normaliseLines(timed, "LRCLIB syncedLyrics（逐行時間）");
+  }
+
+  function parseLrclib(payload) {
+    if (!payload || typeof payload !== "object") return null;
+    return parseLrclibLyricsFile(payload.lyricsfile)
+      || parseLrclibSyncedLyrics(payload.syncedLyrics);
+  }
+
   function parseTtml(text) {
     if (typeof root.DOMParser !== "function") return null;
     let doc;
@@ -261,6 +318,42 @@
     return String(song && (song.artist || song.karaokeArtist) || "Vaundy");
   }
 
+  function estimatedSongDuration(song) {
+    const times = Array.isArray(song && song.lyrics)
+      ? song.lyrics.map(line => finite(line && line.time)).filter(value => value != null)
+      : [];
+    return times.length ? Math.max(...times) + 5 : null;
+  }
+
+  function scoreLrclibCandidate(candidate, song, options) {
+    if (!candidate || candidate.instrumental) return -Infinity;
+    if (!candidate.lyricsfile && !candidate.syncedLyrics) return -Infinity;
+    const wantedTitle = normaliseText(sourceTitle(song));
+    const candidateTitle = normaliseText(candidate.trackName || candidate.name || "");
+    const wantedArtist = normaliseText(sourceArtist(song));
+    const candidateArtist = normaliseText(candidate.artistName || "");
+    if (!candidateTitle || !candidateArtist) return -Infinity;
+
+    let score = 0;
+    if (candidateTitle === wantedTitle) score += 30;
+    else if (candidateTitle.includes(wantedTitle) || wantedTitle.includes(candidateTitle)) score += 12;
+    if (candidateArtist === wantedArtist) score += 12;
+    else if (candidateArtist.includes(wantedArtist) || wantedArtist.includes(candidateArtist)) score += 8;
+
+    const wantedDuration = finite(options && options.duration) || estimatedSongDuration(song);
+    const candidateDuration = finite(candidate.duration);
+    if (wantedDuration && candidateDuration) {
+      const difference = Math.abs(wantedDuration - candidateDuration);
+      if (difference <= 3) score += 12;
+      else if (difference <= 8) score += 7;
+      else if (difference <= 20) score += 2;
+      else if (difference <= 30) score -= 3;
+      else score -= 25;
+    }
+    if (candidate.lyricsfile) score += 2;
+    return score;
+  }
+
   async function fetchWorker(song, options) {
     const base = String((options && options.workerUrl) || DEFAULT_WORKER).replace(/\/$/, "");
     const trackId = encodeURIComponent(`horo-${String(song && song.id || "song")}`);
@@ -308,6 +401,31 @@
     return timed;
   }
 
+  async function fetchLrclib(song, options) {
+    const url = new URL(`${LRCLIB_API}/search`);
+    url.searchParams.set("track_name", sourceTitle(song));
+    url.searchParams.set("artist_name", sourceArtist(song));
+    const search = await fetchJson(url.toString(), {
+      timeoutMs: (options && options.timeoutMs) || 7000
+    });
+    if (!Array.isArray(search)) return null;
+
+    const candidates = search
+      .map((candidate, index) => ({ candidate, index, score: scoreLrclibCandidate(candidate, song, options) }))
+      .filter(entry => Number.isFinite(entry.score))
+      .sort((a, b) => b.score - a.score || a.index - b.index);
+    for (const entry of candidates) {
+      const timed = parseLrclib(entry.candidate);
+      if (!timed) continue;
+      timed.source = timed.source || "LRCLIB lyricsfile（逐行時間）";
+      timed.providerOrder = ["LRCLIB lyricsfile（逐行時間）"];
+      timed.granularity = "line";
+      timed.trackId = entry.candidate.id;
+      return timed;
+    }
+    return null;
+  }
+
   async function load(song, options) {
     if (!song || !song.id) return null;
     const opts = options || {};
@@ -330,6 +448,10 @@
       if (!timed) {
         notify(opts, { state: "fallback", source: "AMLL TTML DB" });
         timed = await fetchAmll(song, opts);
+      }
+      if (!timed) {
+        notify(opts, { state: "fallback", source: "LRCLIB lyricsfile（逐行時間）" });
+        timed = await fetchLrclib(song, opts);
       }
       if (timed) {
         writeCache(song, timed);
@@ -494,9 +616,13 @@
   root.KARAOKE_SOURCES = Object.freeze({
     CACHE_VERSION,
     DEFAULT_WORKER,
+    LRCLIB_API,
     PROVIDER_ORDER,
     normaliseText,
     parseEnhancedLrc,
+    parseLrclib,
+    parseLrclibLyricsFile,
+    parseLrclibSyncedLyrics,
     parseTtml,
     normaliseBeautifulLyrics,
     load,
