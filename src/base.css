@@ -579,11 +579,13 @@
     font-size:16px;
   }
   .chant-differences-current{
+    display:inline-flex;
+    align-items:center;
+    gap:4px;
     flex:none;
     color:var(--page-muted,var(--muted));
     font-size:11px;
   }
-  .chant-differences-current b{ color:var(--page-ink,var(--cream)); }
   .chant-differences ul{
     display:grid;
     gap:8px;

@@ -232,9 +232,6 @@ function applyChantVersionUi(){
     button.classList.toggle("active", active);
     button.setAttribute("aria-pressed", active ? "true" : "false");
   });
-  document.querySelectorAll("[data-chant-version-label]").forEach(el => {
-    el.textContent = chantVersionLabel();
-  });
   document.querySelectorAll("[data-chant-version-flag]").forEach(el => {
     el.innerHTML = chantVersionIcon();
   });
@@ -1108,12 +1105,12 @@ function renderGuide(){
           <p class="song-legend-note">數字代表目前應援版本的大合唱歌詞行數。<br>切換歌曲時會依目前排序移動。<br>拍手・揮手提示會顯示在歌曲頁面。</p>
         </div>
         <details class="chant-source-details">
-          <summary>應援版本說明 <span data-chant-version-flag aria-hidden="true">${chantVersionIcon()}</span></summary>
+          <summary>應援版本說明</summary>
           ${chantSourceInfoHtml()}
           <section class="chant-differences" aria-labelledby="chant-differences-title">
             <div class="chant-differences-head">
               <h2 id="chant-differences-title">日本版／韓國版差異</h2>
-              <span class="chant-differences-current">目前：<b data-chant-version-label></b></span>
+              <span class="chant-differences-current">目前 <span data-chant-version-flag aria-hidden="true">${chantVersionIcon()}</span></span>
             </div>
             <ul>${CHANT_DIFFERENCES.map(item => `<li>${escapeHtml(item)}</li>`).join("")}</ul>
             <p class="chant-differences-footnote">未列入日本版歌單的歌曲會暫沿用現有標記，現場仍以 Vaundy 與觀眾的即時引導為準。</p>
