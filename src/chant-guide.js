@@ -141,7 +141,7 @@ export const JP_CHANT_GUIDES = {
       { time: 41.5,  text: "あれ、なに", romaji: "are, nani" },
       { time: 46.5,  text: "それ、なに", romaji: "sore, nani" },
       { time: 85,    text: "あれ、なに", romaji: "are, nani" },
-      { time: 85,    text: "それ、なに", romaji: "sore, nani" },
+      { time: 90.5,  text: "それ、なに", romaji: "sore, nani" },
       { time: 154.5, text: "愛で",       romaji: "ai de" }
     ]
   },
