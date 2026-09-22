@@ -734,6 +734,12 @@ button{touch-action:manipulation;}
   .song-page .reading-value-desktop{display:none;}
   .song-page .venue-label-mobile,
   .song-page .reading-value-mobile{display:inline;}
+  .song-page .reading-toggle{
+    min-width:84px;
+    gap:4px;
+    padding-left:7px;
+    padding-right:7px;
+  }
 }
 
 
