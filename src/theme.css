@@ -727,6 +727,14 @@ button{touch-action:manipulation;}
 /* 아래쪽에 곡 선택 바 자리를 비워 둘 필요가 없어졌다 */
 .song-page{padding-bottom:0;}
 .song-page .player-controls{justify-content:center;}
+.song-page .venue-label-mobile,
+.song-page .reading-value-mobile{display:none;}
+@media (max-width:600px){
+  .song-page .venue-label-desktop,
+  .song-page .reading-value-desktop{display:none;}
+  .song-page .venue-label-mobile,
+  .song-page .reading-value-mobile{display:inline;}
+}
 
 
 /* ── 재생 중인 가사 줄이 여러 개로 보이던 문제 ───────────────────

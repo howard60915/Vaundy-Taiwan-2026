@@ -95,7 +95,7 @@ const SYNC_INTERVAL_MS   = 100;
 /* 지금 폰에 깔려 있는 화면이 몇 번째 판인지 알려 주는 표시.
    새로 올렸는데 화면이 그대로일 때, 옛 판이 남아 있는지 바로 확인할 수 있다.
    sw.js 의 CACHE_VERSION 과 같이 올려 주세요. */
-const BUILD = "v1.8.22";
+const BUILD = "v1.8.23";
 
 const REPO_URL = "https://github.com/watain666/Vaundy-Taiwan-2026";
 const FEEDBACK_URL = "https://www.threads.com/@brainginger/post/DdiLWztgen9";
@@ -2070,7 +2070,8 @@ function buildSongShell(){
           <span class="venue-label">只聽大合唱</span>
         </button>
         <button class="venue-toggle chant-version-toggle" id="chant-version-btn" data-chant-version-toggle aria-pressed="false" aria-label="切換應援版本">
-          <span class="venue-label">應援版</span>
+          <span class="venue-label venue-label-desktop">應援版</span>
+          <span class="venue-label venue-label-mobile" aria-hidden="true">應援</span>
           <span class="chant-version-value">${chantVersionIcon()}</span>
         </button>
         <button class="venue-toggle" id="venue-btn" aria-label="開啟／關閉簡潔模式">
@@ -2079,22 +2080,27 @@ function buildSongShell(){
         </button>
         <button class="venue-toggle reading-toggle" id="reading-btn" aria-pressed="${readingMode !== "kana" ? "true" : "false"}" aria-label="切換日文讀音：目前顯示${readingModeLabel()}">
           <span class="venue-label">讀音</span>
-          <span class="reading-value" id="reading-value">${readingModeLabel()}</span>
+          <span class="reading-value reading-value-desktop" id="reading-value">${readingModeLabel()}</span>
+          <span class="reading-value reading-value-mobile" id="reading-value-mobile" aria-hidden="true">${readingModeShortLabel()}</span>
         </button>
         <button class="venue-toggle display-toggle${showJapanese ? " active" : ""}" id="japanese-toggle" aria-pressed="${showJapanese ? "true" : "false"}" aria-label="切換日文歌詞：目前${showJapanese ? "顯示" : "隱藏"}">
-          <span class="venue-label">日文</span>
+          <span class="venue-label venue-label-desktop">日文</span>
+          <span class="venue-label venue-label-mobile" aria-hidden="true">日</span>
           <span class="venue-switch"><span class="venue-knob"></span></span>
         </button>
         <button class="venue-toggle display-toggle${showChinese ? " active" : ""}" id="chinese-toggle" aria-pressed="${showChinese ? "true" : "false"}" aria-label="切換繁中翻譯：目前${showChinese ? "顯示" : "隱藏"}">
-          <span class="venue-label">中文</span>
+          <span class="venue-label venue-label-desktop">中文</span>
+          <span class="venue-label venue-label-mobile" aria-hidden="true">中</span>
           <span class="venue-switch"><span class="venue-knob"></span></span>
         </button>
         <button class="venue-toggle display-toggle karaoke-toggle${karaokeEnabled ? " active" : ""}" id="karaoke-btn" aria-pressed="${karaokeEnabled ? "true" : "false"}" aria-label="切換逐字卡拉OK高亮：目前${karaokeEnabled ? "開啟" : "關閉"}">
-          <span class="venue-label">卡拉OK</span>
+          <span class="venue-label venue-label-desktop">卡拉OK</span>
+          <span class="venue-label venue-label-mobile" aria-hidden="true">卡拉</span>
           <span class="venue-switch"><span class="venue-knob"></span></span>
         </button>
         <button class="venue-toggle autoscroll-toggle${autoScrollEnabled ? " active" : ""}" id="autoscroll-btn" aria-label="開啟／關閉自動捲動">
-          <span class="venue-label">自動捲動</span>
+          <span class="venue-label venue-label-desktop">自動捲動</span>
+          <span class="venue-label venue-label-mobile" aria-hidden="true">同步</span>
           <span class="venue-switch"><span class="venue-knob"></span></span>
         </button>
       </div>
@@ -2716,10 +2722,13 @@ function applyVenueMode(){
 function updateReadingUi(){
   const btn = document.getElementById("reading-btn");
   const value = document.getElementById("reading-value");
+  const shortValue = document.getElementById("reading-value-mobile");
   const label = readingModeLabel();
+  const shortLabel = readingModeShortLabel();
   const page = document.getElementById("song-page");
   if (page) page.classList.toggle("reading-both", readingMode === "both");
   if (value) value.textContent = label;
+  if (shortValue) shortValue.textContent = shortLabel;
   if (btn){
     btn.classList.toggle("active", readingMode !== "kana");
     btn.setAttribute("aria-pressed", readingMode !== "kana" ? "true" : "false");
@@ -3028,6 +3037,12 @@ function readingModeLabel(mode = readingMode){
   if (mode === "romaji") return "羅馬字";
   if (mode === "both") return "假名+羅馬字";
   return "假名";
+}
+
+function readingModeShortLabel(mode = readingMode){
+  if (mode === "romaji") return "羅";
+  if (mode === "both") return "假+羅";
+  return "假";
 }
 
 function renderJapaneseLine(str){
