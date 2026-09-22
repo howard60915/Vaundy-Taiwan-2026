@@ -3122,6 +3122,8 @@ function escapeHtml(str){
  */
 const CJK_CHAR_RE = /[\p{Script=Han}\p{Script=Hiragana}\p{Script=Katakana}]/u;
 const LATIN_OR_DIGIT_CHAR_RE = /[A-Za-z0-9]/;
+const ROMAJI_WORD_CHAR_RE = /[\p{Script=Latin}\p{N}]/u;
+const ROMAJI_WORD_CONTINUATION_RE = /[\p{Script=Latin}\p{N}'’_-]/u;
 const CJK_TO_LATIN_RE = /([\p{Script=Han}\p{Script=Hiragana}\p{Script=Katakana}])(?=[A-Za-z0-9])/gu;
 const LATIN_TO_CJK_RE = /([A-Za-z0-9])(?=[\p{Script=Han}\p{Script=Hiragana}\p{Script=Katakana}])/gu;
 
@@ -3749,7 +3751,7 @@ function karaokeUnitWeight(text){
   const value = String(text || "");
   const visible = Array.from(value).filter(ch => !/\s/u.test(ch));
   if (!visible.length) return 0;
-  if (visible.every(ch => /[A-Za-z0-9]/.test(ch))) return Math.max(1, visible.length * 0.75);
+  if (visible.every(ch => ROMAJI_WORD_CHAR_RE.test(ch))) return Math.max(1, visible.length * 0.75);
   if (visible.every(ch => /[、。！？!?.,，。]/u.test(ch))) return 0.45;
   return Math.max(1, visible.length);
 }
@@ -3777,9 +3779,9 @@ function decorateKaraokeTextNode(node, units){
       continue;
     }
     // 羅馬拼音／英文以單字為一個單位，避免加上 span 後英文被拆得太碎。
-    if (/[A-Za-z0-9]/.test(ch)){
+    if (ROMAJI_WORD_CHAR_RE.test(ch)){
       let j = i + 1;
-      while (j < chars.length && /[A-Za-z0-9'’_-]/.test(chars[j])) j++;
+      while (j < chars.length && ROMAJI_WORD_CONTINUATION_RE.test(chars[j])) j++;
       const word = chars.slice(i, j).join("");
       appendKaraokeUnit(fragment, units, word, karaokeUnitWeight(word));
       i = j;
@@ -3825,12 +3827,94 @@ function decorateKaraokeLine(target){
   target._karaokeUnits = units;
 }
 
+function karaokeUnitSourceText(unit){
+  return unit && unit.el
+    ? unit.el.dataset.karaokeText || unit.el.textContent || ""
+    : "";
+}
+
+function karaokeUnitReadingText(unit){
+  if (!unit || !unit.el) return "";
+  const ruby = unit.el.querySelector("ruby");
+  if (ruby){
+    const reading = ruby.querySelector("rt");
+    return reading ? reading.textContent || "" : ruby.textContent || "";
+  }
+  return unit.el.textContent || "";
+}
+
+/* In romaji-only mode the visible `.lyric-jp` target is no longer Japanese,
+   but Japanese remains the source of truth for every word clock.  Build one
+   detached kana target solely to recover its source units and readings. */
+function kanaReferenceForLine(line){
+  if (!line) return null;
+  if (readingMode !== "romaji") return line.querySelector(".lyric-jp");
+
+  const index = Number(line.dataset.idx);
+  const lyric = currentSong && currentSong.lyrics && currentSong.lyrics[index];
+  if (!lyric) return null;
+  const target = document.createElement("span");
+  target.className = "lyric-jp karaoke-reference";
+  target.lang = "ja";
+  target.innerHTML = renderChantAwareLine(
+    lyric.jp || "",
+    lyric,
+    currentSong,
+    text => renderKanaLine(text),
+    "jp"
+  );
+  decorateKaraokeLine(target);
+  return target;
+}
+
 function assignKaraokeLineTiming(line, timedLine){
   if (!line) return;
-  const targets = [...line.querySelectorAll(".lyric-jp, .lyric-romaji")]
+  const displayTargets = [...line.querySelectorAll(".lyric-jp, .lyric-romaji")]
     .filter(target => (target.textContent || "").trim());
-  let sourceKind = "line-proportional";
+  const referenceTarget = kanaReferenceForLine(line);
+  const targets = [...new Set([
+    referenceTarget,
+    ...displayTargets,
+  ].filter(Boolean))];
+  const referenceUnits = referenceTarget && referenceTarget._karaokeUnits
+    ? referenceTarget._karaokeUnits
+    : [];
+  const referenceSourceTexts = referenceUnits.map(karaokeUnitSourceText);
+  const referenceTexts = referenceUnits.map(karaokeUnitReadingText);
+  const sourceApi = window.KARAOKE_SOURCES || {};
+  const timedStart = timedLine ? Number(timedLine.start) : NaN;
+  const timedEnd = timedLine ? Number(timedLine.end) : NaN;
+  const lineStart = Number.isFinite(timedStart)
+    ? timedStart
+    : Number(line.dataset.karaokeStart);
+  const lineEndValue = Number.isFinite(timedEnd)
+    ? timedEnd
+    : Number(line.dataset.karaokeEnd);
+  const start = Number.isFinite(lineStart) ? lineStart : 0;
+  const end = Number.isFinite(lineEndValue) && lineEndValue > start
+    ? lineEndValue
+    : start + 0.04;
+  const allocate = typeof sourceApi.allocateUnitTimings === "function"
+    ? sourceApi.allocateUnitTimings(referenceSourceTexts, start, end)
+    : [];
+  let referenceTimings = allocate;
+  let hasWordTiming = false;
 
+  if (timedLine && timedLine.granularity !== "line"
+    && Array.isArray(timedLine.words) && timedLine.words.length
+    && typeof sourceApi.mapUnitsToWords === "function"){
+    const mappedReference = sourceApi.mapUnitsToWords(referenceSourceTexts, timedLine.words);
+    const enoughTextMatches = mappedReference.total > 0
+      && mappedReference.matched / mappedReference.total >= 0.6;
+    if (enoughTextMatches){
+      referenceTimings = mappedReference.timings.map((timing, index) =>
+        timing || allocate[index] || null
+      );
+      hasWordTiming = true;
+    }
+  }
+
+  let sourceKind = hasWordTiming ? "word" : "line-proportional";
   targets.forEach(target => {
     const units = target._karaokeUnits || [];
     units.forEach(unit => {
@@ -3839,25 +3923,22 @@ function assignKaraokeLineTiming(line, timedLine){
       delete unit.el.dataset.karaokeStart;
       delete unit.el.dataset.karaokeEnd;
     });
-    if (!timedLine || !Array.isArray(timedLine.words) || !timedLine.words.length){
-      return;
+    const isReference = target === referenceTarget;
+    const texts = units.map(karaokeUnitSourceText);
+    let timings = isReference ? referenceTimings : [];
+    if (!isReference && typeof sourceApi.mapUnitsToReferenceTimings === "function"){
+      const mapped = sourceApi.mapUnitsToReferenceTimings(texts, referenceTexts, referenceTimings);
+      timings = mapped.timings;
+      if (!mapped.complete && hasWordTiming) sourceKind = "word-reference-fallback";
+    } else if (!isReference && typeof sourceApi.allocateUnitTimings === "function"){
+      /* This is only a compatibility fallback for an older cached script;
+         the normal path always maps romaji onto the Japanese timing array. */
+      timings = sourceApi.allocateUnitTimings(texts, start, end);
     }
 
-    const texts = units.map(unit => unit.el.dataset.karaokeText || unit.el.textContent || "");
-    const mapped = window.KARAOKE_SOURCES && typeof window.KARAOKE_SOURCES.mapUnitsToWords === "function"
-      ? window.KARAOKE_SOURCES.mapUnitsToWords(texts, timedLine.words)
-      : { timings: [], matched: 0, total: 0 };
-    const enoughTextMatches = mapped.total > 0 && mapped.matched / mapped.total >= 0.6;
-    const timings = enoughTextMatches
-      ? mapped.timings
-      : (window.KARAOKE_SOURCES && typeof window.KARAOKE_SOURCES.allocateUnitTimings === "function"
-          ? window.KARAOKE_SOURCES.allocateUnitTimings(texts, Number(timedLine.start), Number(timedLine.end))
-          : []);
-
-    if (enoughTextMatches) sourceKind = "word";
     units.forEach((unit, index) => {
       const timing = timings[index];
-      if (!timing) return;
+      if (!timing || !Number.isFinite(Number(timing.start)) || !Number.isFinite(Number(timing.end))) return;
       unit.start = Number(timing.start);
       unit.end = Math.max(unit.start + 0.02, Number(timing.end));
       /* Keep the timing on the element too.  Reading-mode changes replace

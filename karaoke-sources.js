@@ -549,6 +549,7 @@
       aligned[match.index] = {
         start: Math.max(0, match.localStart),
         end: Math.max(match.localStart + 0.04, match.end + lineOffset),
+        granularity: timedLyrics.granularity || "word",
         words: wordsWithOffset
       };
     });
@@ -600,12 +601,324 @@
     return { timings: out, matched, total: (unitTexts || []).filter((textValue) => normaliseText(textValue)).length };
   }
 
+  function normaliseRomajiText(value) {
+    return String(value == null ? "" : value)
+      .normalize("NFKD")
+      .replace(/\p{M}/gu, "")
+      .toLocaleLowerCase()
+      .replace(/[\s\u3000、。！？!?.,，．・「」『』（）()\[\]{}【】<>《》:：;；…—–_「」『』“”‘’'’"]/g, "");
+  }
+
+  function romajiVariants(value) {
+    const raw = String(value == null ? "" : value).toLocaleLowerCase();
+    const base = normaliseRomajiText(raw);
+    const variants = new Set(base ? [base] : []);
+    const macronExpansions = {
+      "ā": ["aa"],
+      "ī": ["ii"],
+      "ū": ["uu"],
+      "ē": ["ee", "ei"],
+      "ō": ["oo", "ou"],
+    };
+    let expandedValues = [raw];
+    Object.entries(macronExpansions).forEach(([macron, values]) => {
+      const nextValues = [];
+      expandedValues.forEach(current => {
+        if (!current.includes(macron)) {
+          nextValues.push(current);
+          return;
+        }
+        values.forEach(value => nextValues.push(current.replaceAll(macron, value)));
+      });
+      expandedValues = nextValues;
+    });
+    expandedValues.forEach(expanded => {
+      const expandedValue = normaliseRomajiText(expanded);
+      if (expandedValue) variants.add(expandedValue);
+    });
+
+    /* A standalone macron can correspond to the preceding vowel, a source
+       kana `う`, or a long-mark expansion.  Keep all of those forms
+       equivalent while matching display words to the Japanese reference. */
+    if (/^[āīūēō]$/u.test(raw)) {
+      const standalone = {
+        "ā": ["a", "aa"],
+        "ī": ["i", "ii"],
+        "ū": ["u", "uu"],
+        "ē": ["e", "ee", "ei"],
+        "ō": ["o", "u", "oo", "ou"],
+      }[raw] || [];
+      standalone.forEach(value => variants.add(value));
+    }
+
+    /* Natural romaji commonly writes the topic particle は as `wa` and the
+       direction particle へ as `e`, while their kana readings remain は／へ.
+       Keep the ordinary word spellings first, then accept these two
+       context-sensitive alternatives when the canonical stream needs them. */
+    if (base === "wa") variants.add("ha");
+    if (base === "e") variants.add("he");
+    if (/wa$/u.test(base)) variants.add(base.replace(/wa$/u, "ha"));
+
+    /* Existing lyric readings use ordinary Hepburn spellings as well as the
+       nasal-assimilation spellings heard in singing: `senmei`/`semmei`,
+       `unmei`/`ummei`, `shinpaku`/`shimpaku`, and so on. */
+    if (/m(?=[bmp])/u.test(base)) variants.add(base.replace(/m(?=[bmp])/gu, "n"));
+    if (/n(?=[bmp])/u.test(base)) variants.add(base.replace(/n(?=[bmp])/gu, "m"));
+
+    /* A few hand-maintained lines keep a visible word break inside a yōon,
+       e.g. `hi yururi` for ひゅるり.  When adjacent units are considered
+       together, accept the equally common `hiyu` → `hyu` spelling. */
+    [...variants].forEach(candidate => {
+      const yōonVariant = candidate.replace(/([bcdfghjklmnpqrstvwxyz])i(?=y[aeiou])/gu, "$1");
+      if (yōonVariant !== candidate) variants.add(yōonVariant);
+      const iuVariant = candidate.replace(/yuu/gu, "iu");
+      if (iuVariant !== candidate) variants.add(iuVariant);
+    });
+    [...variants].forEach(candidate => {
+      if (/cch/u.test(candidate)) variants.add(candidate.replace(/cch/gu, "tch"));
+      if (/tch/u.test(candidate)) variants.add(candidate.replace(/tch/gu, "cch"));
+    });
+
+    return [...variants].filter(Boolean).sort((a, b) => b.length - a.length);
+  }
+
+  const KANA_ROMAJI = Object.freeze({
+    "ぁ": "a", "あ": "a", "ぃ": "i", "い": "i", "ぅ": "u", "う": "u", "ぇ": "e", "え": "e", "ぉ": "o", "お": "o",
+    "か": "ka", "き": "ki", "く": "ku", "け": "ke", "こ": "ko", "が": "ga", "ぎ": "gi", "ぐ": "gu", "げ": "ge", "ご": "go",
+    "さ": "sa", "し": "shi", "す": "su", "せ": "se", "そ": "so", "ざ": "za", "じ": "ji", "ず": "zu", "ぜ": "ze", "ぞ": "zo",
+    "た": "ta", "ち": "chi", "つ": "tsu", "て": "te", "と": "to", "だ": "da", "ぢ": "ji", "づ": "zu", "で": "de", "ど": "do",
+    "な": "na", "に": "ni", "ぬ": "nu", "ね": "ne", "の": "no", "は": "ha", "ひ": "hi", "ふ": "fu", "へ": "he", "ほ": "ho",
+    "ば": "ba", "び": "bi", "ぶ": "bu", "べ": "be", "ぼ": "bo", "ぱ": "pa", "ぴ": "pi", "ぷ": "pu", "ぺ": "pe", "ぽ": "po",
+    "ま": "ma", "み": "mi", "む": "mu", "め": "me", "も": "mo", "や": "ya", "ゆ": "yu", "よ": "yo",
+    "ら": "ra", "り": "ri", "る": "ru", "れ": "re", "ろ": "ro", "わ": "wa", "ゐ": "wi", "ゑ": "we", "を": "o", "ん": "n",
+    "ゔ": "vu", "きゃ": "kya", "きゅ": "kyu", "きょ": "kyo", "ぎゃ": "gya", "ぎゅ": "gyu", "ぎょ": "gyo",
+    "しゃ": "sha", "しゅ": "shu", "しょ": "sho", "じゃ": "ja", "じゅ": "ju", "じょ": "jo",
+    "ちゃ": "cha", "ちゅ": "chu", "ちょ": "cho", "ぢゃ": "ja", "ぢゅ": "ju", "ぢょ": "jo",
+    "にゃ": "nya", "にゅ": "nyu", "にょ": "nyo", "ひゃ": "hya", "ひゅ": "hyu", "ひょ": "hyo",
+    "びゃ": "bya", "びゅ": "byu", "びょ": "byo", "ぴゃ": "pya", "ぴゅ": "pyu", "ぴょ": "pyo",
+    "みゃ": "mya", "みゅ": "myu", "みょ": "myo", "りゃ": "rya", "りゅ": "ryu", "りょ": "ryo",
+    "うぁ": "wa", "うぃ": "wi", "うぇ": "we", "うぉ": "wo", "ゔぁ": "va", "ゔぃ": "vi", "ゔぇ": "ve", "ゔぉ": "vo",
+    "しぇ": "she", "じぇ": "je", "ちぇ": "che", "てぃ": "ti", "でぃ": "di", "とぅ": "tu", "どぅ": "du",
+    "ふぁ": "fa", "ふぃ": "fi", "ふぇ": "fe", "ふぉ": "fo",
+    "ぁ": "a", "ぃ": "i", "ぅ": "u", "ぇ": "e", "ぉ": "o", "ゃ": "ya", "ゅ": "yu", "ょ": "yo",
+  });
+
+  function hiraganaChar(char) {
+    const code = String(char || "").codePointAt(0);
+    return code >= 0x30a1 && code <= 0x30f6
+      ? String.fromCodePoint(code - 0x60)
+      : String(char || "");
+  }
+
+  function referenceRomajiChars(referenceTexts) {
+    const source = [];
+    (referenceTexts || []).forEach((value, referenceIndex) => {
+      Array.from(String(value == null ? "" : value).normalize("NFKC"))
+        .forEach(char => source.push({ char, referenceIndex }));
+    });
+
+    const output = [];
+    const append = (value, indices) => {
+      const chars = Array.from(value);
+      const first = indices[0];
+      const last = indices[indices.length - 1] ?? first;
+      chars.forEach((char, index) => {
+        output.push({
+          char,
+          referenceIndex: index === chars.length - 1 ? last : first,
+        });
+      });
+    };
+    const nextKana = index => hiraganaChar(source[index]?.char || "");
+
+    for (let index = 0; index < source.length;) {
+      const current = hiraganaChar(source[index].char);
+      if (/\s/u.test(current) || /[、。！？!?.,，．・「」『』（）()\[\]{}【】<>《》:：;；…—–_'"]/u.test(current)) {
+        index += 1;
+        continue;
+      }
+
+      if (current === "っ") {
+        const next = nextKana(index + 1);
+        const nextPair = `${next}${nextKana(index + 2)}`;
+        const nextRomaji = KANA_ROMAJI[nextPair] || KANA_ROMAJI[next] || "";
+        const consonant = nextRomaji.startsWith("ch")
+          ? "t"
+          : nextRomaji.match(/^[bcdfghjklmnpqrstvwxyz]/u)?.[0];
+        if (consonant) output.push({ char: consonant, referenceIndex: source[index].referenceIndex });
+        index += 1;
+        continue;
+      }
+
+      if (current === "ー") {
+        const previous = [...output].reverse().find(entry => /[aeiou]/u.test(entry.char));
+        if (previous) {
+          output.push({
+            char: previous.char.match(/[aeiou]/u)[0],
+            referenceIndex: source[index].referenceIndex,
+          });
+        }
+        index += 1;
+        continue;
+      }
+
+      const next = nextKana(index + 1);
+      const pair = `${current}${next}`;
+      const romaji = KANA_ROMAJI[pair] || KANA_ROMAJI[current];
+      if (romaji) {
+        const indices = [source[index].referenceIndex];
+        if (KANA_ROMAJI[pair] && source[index + 1]) indices.push(source[index + 1].referenceIndex);
+        append(romaji, indices);
+        index += KANA_ROMAJI[pair] ? 2 : 1;
+        continue;
+      }
+
+      const normalised = normaliseRomajiText(current);
+      if (normalised) append(normalised, [source[index].referenceIndex]);
+      index += 1;
+    }
+    return output;
+  }
+
+  function fillUnmatchedReferenceTimings(unitTexts, timings, referenceTimings) {
+    const out = timings.slice();
+    const total = (unitTexts || []).filter(textValue => romajiVariants(textValue).length).length;
+    const isTimed = timing => timing && Number.isFinite(Number(timing.start)) && Number.isFinite(Number(timing.end));
+    const lineStart = referenceTimings.find(isTimed)?.start ?? 0;
+    const reverse = [...referenceTimings].reverse().find(isTimed);
+    const lineEnd = reverse ? reverse.end : lineStart + 0.04;
+    const meaningful = (unitTexts || []).map((textValue, index) => ({
+      index,
+      meaningful: romajiVariants(textValue).length > 0,
+    })).filter(entry => entry.meaningful);
+
+    for (let position = 0; position < meaningful.length;) {
+      if (isTimed(out[meaningful[position].index])) {
+        position += 1;
+        continue;
+      }
+
+      const first = position;
+      while (position < meaningful.length && !isTimed(out[meaningful[position].index])) position += 1;
+      const last = position - 1;
+      const previous = first > 0 ? out[meaningful[first - 1].index] : null;
+      const next = position < meaningful.length ? out[meaningful[position].index] : null;
+      const start = Number(previous?.end ?? lineStart);
+      const end = Number(next?.start ?? lineEnd);
+      const span = Math.max(0.04, end - start);
+      const weights = meaningful.slice(first, last + 1).map(entry =>
+        Math.max(0.45, romajiVariants(unitTexts[entry.index]).join("").length || 1)
+      );
+      const weightSum = weights.reduce((sum, value) => sum + value, 0) || 1;
+      let cursor = start;
+      weights.forEach((weight, offset) => {
+        const nextCursor = cursor + span * weight / weightSum;
+        out[meaningful[first + offset].index] = {
+          start: cursor,
+          end: Math.max(cursor + 0.02, nextCursor),
+        };
+        cursor = nextCursor;
+      });
+    }
+    return { timings: out, total };
+  }
+
+  /* Map natural romaji display units onto the timing spans of the Japanese
+     reference units.  The readings are kept as separate units while they
+     are transliterated as one stream, so さと + っ + て becomes satotte and
+     the resulting word spans all three Japanese timings. */
+  function mapUnitsToReferenceTimings(unitTexts, referenceTexts, referenceTimings) {
+    const chars = referenceRomajiChars(referenceTexts);
+    const text = chars.map(entry => entry.char).join("");
+    const out = [];
+    const unmatched = [];
+    let cursor = 0;
+    let matched = 0;
+
+    const units = unitTexts || [];
+    const findMatch = variants => {
+      let position = -1;
+      let matchedValue = "";
+      for (const variant of variants) {
+        const candidate = text.indexOf(variant, cursor);
+        if (candidate < 0) continue;
+        if (position < 0 || candidate < position
+          || (candidate === position && variant.length > matchedValue.length)) {
+          position = candidate;
+          matchedValue = variant;
+        }
+      }
+      return { position, matchedValue };
+    };
+
+    for (let unitIndex = 0; unitIndex < units.length; unitIndex += 1) {
+      const unitText = units[unitIndex];
+      const variants = romajiVariants(unitText);
+      if (!variants.length) {
+        out.push(null);
+        continue;
+      }
+
+      let consumed = 1;
+      let match = findMatch(variants);
+      if (match.position < 0 && unitIndex + 1 < units.length
+        && romajiVariants(units[unitIndex + 1]).length) {
+        const combined = romajiVariants(`${unitText}${units[unitIndex + 1]}`);
+        const combinedMatch = findMatch(combined);
+        if (combinedMatch.position >= 0) {
+          match = combinedMatch;
+          consumed = 2;
+        }
+      }
+
+      if (match.position < 0) {
+        out.push(null);
+        unmatched.push(unitIndex);
+        continue;
+      }
+
+      const first = chars[match.position];
+      const last = chars[match.position + match.matchedValue.length - 1];
+      const firstTiming = first && referenceTimings[first.referenceIndex];
+      const lastTiming = last && referenceTimings[last.referenceIndex];
+      if (!firstTiming || !lastTiming) {
+        for (let offset = 0; offset < consumed; offset += 1) {
+          out.push(null);
+          unmatched.push(unitIndex + offset);
+        }
+        unitIndex += consumed - 1;
+        continue;
+      }
+      const timing = {
+        start: Number(firstTiming.start),
+        end: Math.max(Number(firstTiming.start) + 0.04, Number(lastTiming.end)),
+      };
+      out.push(timing);
+      if (consumed === 2) out.push({ ...timing });
+      cursor = match.position + match.matchedValue.length;
+      matched += consumed;
+      unitIndex += consumed - 1;
+    }
+
+    const filled = fillUnmatchedReferenceTimings(unitTexts, out, referenceTimings);
+    return {
+      timings: filled.timings,
+      matched,
+      total: filled.total,
+      complete: unmatched.length === 0,
+      unmatched,
+    };
+  }
+
   function allocateUnitTimings(unitTexts, start, end) {
     const total = Math.max(0.04, end - start);
-    const weights = (unitTexts || []).map((text) => Math.max(0.45, normaliseText(text).length || 1));
+    const weights = (unitTexts || []).map((text) =>
+      normaliseText(text) ? Math.max(0.45, normaliseText(text).length || 1) : 0
+    );
     const weightSum = weights.reduce((sum, value) => sum + value, 0) || 1;
     let cursor = start;
     return weights.map((weight) => {
+      if (!weight) return null;
       const next = cursor + total * weight / weightSum;
       const result = { start: cursor, end: Math.max(cursor + 0.02, next) };
       cursor = next;
@@ -619,6 +932,7 @@
     LRCLIB_API,
     PROVIDER_ORDER,
     normaliseText,
+    normaliseRomajiText,
     parseEnhancedLrc,
     parseLrclib,
     parseLrclibLyricsFile,
@@ -628,6 +942,7 @@
     load,
     alignToLocalLyrics,
     mapUnitsToWords,
+    mapUnitsToReferenceTimings,
     allocateUnitTimings
   });
 })(typeof window !== "undefined" ? window : globalThis);
