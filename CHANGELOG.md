@@ -2,7 +2,7 @@
 
 本檔案依 Git 歷史整理，使用版本提交作為每一段的邊界。
 
-## [**v1.9.2**](https://github.com/watain666/Vaundy-Taiwan-2026/commit/RELEASE_COMMIT_SHA)
+## [**v1.9.2**](https://github.com/watain666/Vaundy-Taiwan-2026/commit/cb06ce871a16557f3cc10ed4b70eb2c4ad98fc4d)
 
 - 修正全 36 首歌曲、1419 行歌詞的卡拉 OK 同步，統一以日文逐字時間作為假名與羅馬字的共同基準。
 - 修正 `satotte` 等促音、長音、拗音、macron 與英文／數字混排的羅馬字映射，保留自然羅馬字單字顯示，非標點單位皆有有效時間。
