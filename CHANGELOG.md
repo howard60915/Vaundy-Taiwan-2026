@@ -2,6 +2,13 @@
 
 本檔案依 Git 歷史整理，使用版本提交作為每一段的邊界。
 
+## [**v1.9.1**](https://github.com/watain666/Vaundy-Taiwan-2026/commit/RELEASE_COMMIT_SHA)
+
+- 依 UtaTen 歌詞逐行校對並修正 34 首歌曲的日文 ruby 讀音與羅馬字，保留應援標記、斷行與上下文讀法。
+- 補齊〈心動〉、〈怪獣の花唄〉、〈恋風邪にのせて〉、〈踊り子〉、〈裸の勇者〉、〈不可幸力〉、〈再会〉、〈花占い〉、〈呼び声〉等歌曲的讀音資料。
+- 為異讀、當て字、數字量詞與英文混合歌詞加入逐行例外處理，讓日文、ruby 與羅馬字在歌詞及應援顯示中保持一致。
+- 感謝 @narihira2000 提供 PR #3，協助校對並補齊多首歌曲的 ruby 與羅馬字。
+
 ## [**v1.9.0**](https://github.com/watain666/Vaundy-Taiwan-2026/commit/a619bc61c714e82eadc96bcbed7bed4bd090bb01)
 
 - 新增桌面版 Document Picture-in-Picture 字幕浮窗，顯示目前句與下一句，並沿用日文、假名／羅馬字、繁中翻譯、ruby 讀音、應援標色與逐字 Karaoke 高亮。
@@ -16,6 +23,7 @@
 - 修正〈不可幸力〉、〈恋風邪にのせて〉等歌曲的過長歌詞分段，補齊對應的假名、羅馬字與應援區段。
 - 移除舊韓文歌詞提示，將合唱與拍手等應援 `tag` 統一交由日文歌詞分段承載，並補齊原本缺少 `jp` 的提示行。
 - 更新應援判斷、歌曲標記與歌詞讀音邏輯，避免再依賴已移除的 `ko` 歌詞資料。
+- 感謝 @wunyee 提供 PR #2，協助將應援歌詞分段與標色修正為只標示實際應援文字。
 
 ## [**v1.8.25**](https://github.com/watain666/Vaundy-Taiwan-2026/commit/84025c84a1c31f6eff44c3151f41772ef37f2c6f) - [**v1.8.28**](https://github.com/watain666/Vaundy-Taiwan-2026/commit/dcba472ce471bbe82d64c0b5077f6cb5917ff057)
 
