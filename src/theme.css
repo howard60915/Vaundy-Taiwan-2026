@@ -309,6 +309,10 @@ button{touch-action:manipulation;}
 .song-page .playback-rate-select{
   color:var(--gold-soft);
   color-scheme:dark;
+  font-size:11px;
+  font-weight:400;
+  line-height:1.2;
+  letter-spacing:.04em;
 }
 .song-page .tip-pic-card{border:0;background:var(--stage-raised);}
 
@@ -734,11 +738,13 @@ button{touch-action:manipulation;}
   .song-page .reading-value-desktop{display:none;}
   .song-page .venue-label-mobile,
   .song-page .reading-value-mobile{display:inline;}
+  .song-page .playback-rate-control{ padding-left:4px;padding-right:4px; }
+  .song-page .playback-rate-select{ min-width:54px; }
   .song-page .reading-toggle{
-    min-width:84px;
-    gap:4px;
-    padding-left:7px;
-    padding-right:7px;
+    min-width:72px;
+    gap:3px;
+    padding-left:5px;
+    padding-right:5px;
   }
 }
 
