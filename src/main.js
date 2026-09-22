@@ -96,7 +96,7 @@ const SYNC_INTERVAL_MS   = 100;
 /* 지금 폰에 깔려 있는 화면이 몇 번째 판인지 알려 주는 표시.
    새로 올렸는데 화면이 그대로일 때, 옛 판이 남아 있는지 바로 확인할 수 있다.
    sw.js 의 CACHE_VERSION 과 같이 올려 주세요. */
-const BUILD = "v1.8.28";
+const BUILD = "v1.8.30";
 
 const REPO_URL = "https://github.com/watain666/Vaundy-Taiwan-2026";
 const FEEDBACK_URL = "https://www.threads.com/@brainginger/post/DdiLWztgen9";
@@ -3850,10 +3850,9 @@ function hasIconToken(str, name){
   return new RegExp(`[\\[(]${name}[\\])]`, "i").test(str);
 }
 
-// 한 줄의 ko 조각들을 훑어서 박수·동작 아이콘과 현재 선택한
+// 한 줄의 jp 조각들을 훑어서 박수·동작 아이콘과 현재 선택한
 // 응원 버전의 대합창 아이콘을 만들어 줍니다.
 function lyricIconsHtml(line, song = currentSong){
-  const ko = line.ko;
   const hasChant = lineIsChant(line, song);
   let hasClap = false, wave = false;
   const scan = (arr) => {
@@ -3869,12 +3868,8 @@ function lyricIconsHtml(line, song = currentSong){
       if (hasIconToken(seg.text, "clap")) hasClap = true;
     });
   };
-  scan(ko);
-  // 일본어·해석 줄에만 아이콘을 적어도 왼쪽 표시가 붙도록 함께 확인
-  [line.jp, line.tr].forEach(t => {
-    if (hasIconToken(t, "wave")) wave = true;
-    if (hasIconToken(t, "clap")) hasClap = true;
-  });
+  scan(line.jpSegments || line.jp);
+  scan(line.trSegments || line.tr);
   let html = "";
   // 박수·손 흔들기는 가사 안에 넣는 [clap] / [wave] 아이콘으로만 표시하고
   // 왼쪽 종류 표시에는 떼창만 남긴다.
@@ -3891,7 +3886,7 @@ function lineIsChantKr(line){
     return part.some(seg => seg && (seg.tag === "chant"
       || hasIconToken(seg.text, "mic") || hasIconToken(seg.text, "chant")));
   };
-  return hit(line.ko) || hit(line.jp) || hit(line.tr);
+  return hit(line.jpSegments || line.jp) || hit(line.trSegments || line.tr);
 }
 
 function lineIsChantJp(line, song){
@@ -3929,7 +3924,7 @@ function chantLineClass(line, song = currentSong){
    곡 목록 배지(songMarks)와 똑같다 — 기준이 갈리면 배지에는 떼창이
    있다고 뜨는데 재생은 건너뛰는 일이 생기므로 여기 한 곳에 모아 둔다.
      · 日本版：使用 JP_CHANT_GUIDES 的歌詞時間點
-     · 韓國版：沿用 ko/jp/tr 的 [mic]、[chant]、tag:"chant" */
+     · 韓國版：沿用 jp/tr 的 [mic]、[chant]、tag:"chant" */
 function lineIsChant(line, song = currentSong){
   return chantVersion === "jp"
     ? lineIsChantJp(line, song)
@@ -4003,9 +3998,8 @@ function songMarks(song){
       });
     };
 
-    scanPart(line.ko);
-    scanText(line.jp);
-    scanText(line.tr);
+    scanPart(line.jpSegments || line.jp);
+    scanPart(line.trSegments || line.tr);
     // 판단 기준은 lineIsChant 한 곳에서만 (떼창만 듣기와 어긋나지 않도록)
     if (lineIsChant(line, song)) mark.chant++;
   });

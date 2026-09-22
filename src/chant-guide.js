@@ -1,7 +1,7 @@
 /*
  * 應援版本資料
  *
- * data.js 裡現有的 ko/tag 標記是從韓國場整理沿用下來的版本。
+ * data.js 裡的 jp/tag 標記是歌詞與應援資料的共用來源。
  * 日本版則依照 Canva 的「VAUNDY 應援教學」逐曲整理；只存需要
  * 切換的應援行，歌詞本身仍共用 data.js，避免同步時間與翻譯被改動。
  */
@@ -139,10 +139,9 @@ export const JP_CHANT_GUIDES = {
     chantTimes: [54, 59, 64, 69.5, 97.5, 102.5, 108, 113, 176.5, 181.5, 187, 192],
     chantSegments: [
       { time: 41.5,  text: "あれ、なに", romaji: "are, nani" },
-      { time: 41.5,  text: "それ、なに", romaji: "sore, nani" },
+      { time: 46.5,  text: "それ、なに", romaji: "sore, nani" },
       { time: 85,    text: "あれ、なに", romaji: "are, nani" },
-      { time: 85,    text: "それ、なに", romaji: "sore, nani" },
-      { time: 121.5, text: "愛で",       romaji: "ai de" },
+      { time: 90.5,  text: "それ、なに", romaji: "sore, nani" },
       { time: 154.5, text: "愛で",       romaji: "ai de" }
     ]
   },
