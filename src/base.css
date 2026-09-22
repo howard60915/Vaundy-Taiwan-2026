@@ -688,7 +688,7 @@
       overflow:visible;
       white-space:normal;
     }
-    .credits-links .credits-repo{ display:none; }
+    .credits-links .credits-repo{ display:inline-flex; }
     .credits-links .credits-fork,
     .credits-links .credits-link{
       max-width:100%;
