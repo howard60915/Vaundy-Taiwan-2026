@@ -28,7 +28,7 @@ button{touch-action:manipulation;}
 }
 
 .hero{
-  background:var(--bg-deep) url('../images/poster.jpg') center 42%/cover no-repeat;
+  background:var(--bg-deep) url('../images/poster.webp') center 42%/cover no-repeat;
 }
 .hero::after{
   background:rgba(23,5,4,.74);
@@ -176,6 +176,7 @@ button{touch-action:manipulation;}
   font:700 clamp(24px,6vw,30px)/1.25 var(--font-tw-sans);
   letter-spacing:-.025em;
 }
+.hero + .credits{color:var(--gold-soft);}
 .guide-page .songs-head p,
 .guide-page .song-legend-note,
 .guide-page .song-search-meta,

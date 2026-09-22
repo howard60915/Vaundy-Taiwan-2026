@@ -8,6 +8,13 @@
 <link rel="canonical" href="https://vaundy.tiaui.co/">
 <meta name="theme-color" content="#2a0a06">
 <script>try{const t=localStorage.getItem("horo-theme");document.documentElement.dataset.theme=t==="dark"||t==="light"?t:(matchMedia("(prefers-color-scheme: dark)").matches?"dark":"light")}catch(e){}</script>
+<script>
+// Hide the homepage before parsing it when a hash route was requested.
+if (location.hash && location.hash !== "#" && location.hash !== "#/") {
+  document.documentElement.setAttribute("data-initial-route", "");
+}
+</script>
+<style>[data-initial-route] #app{display:none}</style>
 
 <!-- 홈 화면 설치(PWA) -->
 <link rel="apple-touch-icon" href="./apple-touch-icon.png">
@@ -25,7 +32,6 @@
 <meta property="og:description" content="搭配影片確認各曲歌詞與大合唱、拍手、揮手重點">
 <meta property="og:image" content="./icon-512.png">
 <meta name="twitter:card" content="summary">
-<link rel="stylesheet" href="./src/guide-critical.css">
 <link rel="stylesheet" href="./src/app.css">
 
 <!-- ─────────────────────────────────────────────────────────────
@@ -68,62 +74,7 @@
   </symbol>
 </defs></svg>
 
-<main id="app">
-  <div class="guide-page">
-    <div class="song-topbar">
-      <button class="back-btn" id="back-btn" aria-label="返回首頁" title="返回首頁"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m15 18-6-6 6-6"/></svg></button>
-      <button class="theme-toggle" type="button" data-theme-toggle aria-label="切換主題" title="切換主題"><span aria-hidden="true">◐</span></button>
-    </div>
-    <section class="songs-section">
-      <div class="songs-head">
-        <h1>應援指南 無劇透</h1>
-        <p>選擇歌曲，搭配影片查看歌詞與大合唱重點</p>
-        <div class="song-legend">
-          <span class="legend-item"><span class="legend-icon chant" aria-hidden="true">♪</span>大合唱 <b class="legend-num">12</b> 行</span>
-          <span class="legend-item"><span class="legend-icon clap" aria-hidden="true">✦</span>拍手</span>
-          <span class="legend-item"><span class="legend-icon wave" aria-hidden="true">~</span>揮手</span>
-          <span class="legend-item"><span class="legend-icon jump" aria-hidden="true">↟</span>跳躍</span>
-          <span class="legend-item"><span class="legend-icon spin" aria-hidden="true">↻</span>轉臂</span>
-        </div>
-        <p class="song-legend-note">數字代表目前應援版本的大合唱歌詞行數。<br>切換歌曲時會依目前排序移動。<br>拍手・揮手提示會顯示在歌曲頁面。</p>
-      </div>
-      <details class="chant-source-details" id="guide-chant-source">
-        <summary>應援版本說明</summary>
-        <div id="guide-chant-source-content"></div>
-      </details>
-      <div class="song-search-sentinel" id="song-search-sentinel"></div>
-      <div class="song-search">
-        <label class="search-label" for="song-search-input">搜尋歌曲</label>
-        <div class="song-search-box">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.6-3.6"/></svg>
-          <input id="song-search-input" type="search" inputmode="search" autocomplete="off" placeholder="搜尋歌曲名稱・編號">
-          <button type="button" class="song-search-clear" id="song-search-clear" aria-label="清除">✕</button>
-        </div>
-      </div>
-      <div class="song-sorts" role="group" aria-label="歌曲清單排序">
-        <button class="song-sort active" type="button" data-sort="default" aria-pressed="true">預設</button>
-        <button class="song-sort" type="button" data-sort="title" aria-pressed="false">名稱</button>
-        <button class="song-sort" type="button" data-sort="chant" aria-pressed="false">大合唱</button>
-      </div>
-      <div class="song-search-meta"><span id="song-count">共 36 首</span></div>
-      <p class="song-empty" id="song-empty" hidden><b>找不到歌曲</b>請輸入部分歌曲名稱或歌曲編號</p>
-      <ul class="song-list" id="song-list" data-total="36">
-        <li data-no="01"><button class="song-row" data-id="Tokimeki"><span class="song-num">01</span><span class="song-title">心動 (<span lang="ja">Tokimeki</span>)</span><span class="song-marks" aria-label="日本版大合唱 25 行，拍手，揮手"><span class="song-mark chant"><b>25</b><span class="song-mark-unit">行</span></span></span></button></li>
-        <li data-no="02"><button class="song-row" data-id="KaijuNoHanauta"><span class="song-num">02</span><span class="song-title">怪獸之花歌 (<span lang="ja">怪獣の花唄</span>)</span><span class="song-marks" aria-label="日本版大合唱 21 行，拍手，揮手"><span class="song-mark chant"><b>21</b><span class="song-mark-unit">行</span></span></span></button></li>
-        <li data-no="03"><button class="song-row" data-id="CHAINSAWBLOOD"><span class="song-num">03</span><span class="song-title">CHAINSAW BLOOD</span><span class="song-marks" aria-label="日本版大合唱 18 行，拍手，揮手，跳躍"><span class="song-mark chant"><b>18</b><span class="song-mark-unit">行</span></span></span></button></li>
-        <li data-no="04"><button class="song-row" data-id="KoikazeniNosete"><span class="song-num">04</span><span class="song-title">乘著戀愛感冒 (<span lang="ja">恋風邪にのせて</span>)</span><span class="song-marks" aria-label="日本版大合唱 12 行，拍手，揮手"><span class="song-mark chant"><b>12</b><span class="song-mark-unit">行</span></span></span></button></li>
-      </ul>
-    </section>
-    <footer class="credits">
-      <p class="credits-copy">VAUNDY ASIA ARENA TOUR 2026 &ldquo;HORO&rdquo;・TAIWAN FAN CHANT GUIDE（非官方粉絲製作）<span class="build">v1.9.4</span></p>
-      <nav class="credits-links" aria-label="專案連結">
-        <a class="credits-link credits-repo" href="https://github.com/watain666/Vaundy-Taiwan-2026" target="_blank" rel="noopener" aria-label="GitHub Repo" title="GitHub Repo">GitHub</a>
-        <a class="credits-fork" href="https://vaundy-seoul-2026.pages.dev/" target="_blank" rel="noopener">Fork from SEOUL 응원가이드</a>
-        <button class="credits-link changelog-trigger" type="button" data-open-changelog aria-haspopup="dialog" aria-controls="changelog-view">更新日誌</button>
-      </nav>
-    </footer>
-  </div>
-</main>
+<main id="app"></main>
 <!-- 곡 화면 — 유튜브 iframe 을 다시 만들지 않으려고 화면 밖에 계속 살려 둔다 -->
 <main id="song-view" class="song-view offstage" inert></main>
 
@@ -164,6 +115,6 @@
   <button type="button" class="close" id="app-banner-close" aria-label="關閉">✕</button>
 </div>
 
-<script type="module" src="./src/bootstrap.js"></script>
+<script type="module" src="./src/main.js"></script>
 </body>
 </html>

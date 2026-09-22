@@ -7,8 +7,8 @@
 const CACHE_VERSION = "v1.9.4";
 const CACHE_NAME    = `horo-guide-${CACHE_VERSION}`;
 
-/* Vite production builds replace this with the hashed entry files referenced
-   by dist/index.html. Lazy chunks are cached only after they are requested. */
+/* Vite production builds include the entry, split lyrics/readings, and CSS
+   images so opening a song for the first time also works offline. */
 const VITE_BUILD_ASSETS = [];
 
 /* 처음 방문할 때 미리 받아 둘 핵심 파일들.
@@ -21,8 +21,7 @@ const PRECACHE = [
   "./icon-512.png",
   "./icon-maskable-512.png",
   "./apple-touch-icon.png",
-  "./images/poster.jpg",
-  "./images/setlist-bg.jpg",
+  ...(VITE_BUILD_ASSETS.length ? [] : ["./images/poster.webp", "./images/setlist-bg.jpg"]),
   ...VITE_BUILD_ASSETS
 ];
 

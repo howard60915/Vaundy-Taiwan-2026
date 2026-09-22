@@ -7,13 +7,15 @@
 ## 1. 專案結構與建置
 
 ```text
-index.html                  ← 最小化 HTML 外殼與 PWA meta
+index.html                  ← HTML 外殼與 PWA meta；Vite 建置時填入首頁
 src/main.js                 ← 頁面路由、互動與渲染邏輯
 src/data.js                 ← 歌詞、歌單、座位與演出資料
 src/base.css                ← 基礎元件樣式
 src/theme.css               ← 主題與頁面外觀樣式
 src/app.css                 ← CSS 統一入口
 src/ui/icons.js             ← 共用 SVG 圖示與歌詞圖示模板
+src/ui/home.js              ← 建置與頁面切換共用的首頁 HTML
+src/ui/footer.js            ← 共用頁尾與版本資訊
 src/services/storage.js     ← localStorage 安全封裝
 src/services/lazy-modules.js ← 注音與卡拉 OK 延後載入
 package.json                ← Vite 指令與相依套件
@@ -38,6 +40,10 @@ npm ci
 npm run build
 npm run preview
 ```
+
+正式建置會直接輸出首頁 HTML，並內嵌完整壓縮 CSS；互動程式正常啟動，不需要等第一次點擊或捲動才載入。直接開啟 `#/guide`、`#/setlist` 或歌曲連結時，會先隱藏首頁，再顯示指定頁面，避免閃爍與版面跳動。首頁與頁面切換共用 `src/ui/home.js`，請不要另外手寫一份首頁快照。
+
+首頁背景使用同尺寸的 `images/poster.webp`；座位配置預覽只在展開卡片後下載。Service Worker 會在頁面載入後準備離線所需的程式、歌詞與讀音分檔，因此只開過首頁也能在快取完成後離線進入歌曲。
 
 介面文字使用台灣常見的裝置內建字體（PingFang TC、Microsoft JhengHei、Noto Sans CJK TC）；日文歌詞另外使用 Noto Sans JP，以避免裝置內建字體缺少日文漢字。
 

@@ -1,6 +1,20 @@
 import { defineConfig } from "vite";
-import { cpSync, readFileSync, writeFileSync } from "node:fs";
+import { cpSync, readdirSync, readFileSync, writeFileSync } from "node:fs";
 import { resolve } from "node:path";
+import { homeHtml } from "./src/ui/home.js";
+
+function prerenderHome(){
+  return {
+    name: "prerender-home",
+    transformIndexHtml: {
+      order: "pre",
+      handler(html){
+        const { version } = JSON.parse(readFileSync(resolve("package.json"), "utf8"));
+        return html.replace('<main id="app"></main>', `<main id="app">${homeHtml(`v${version}`)}</main>`);
+      }
+    }
+  };
+}
 
 function copyRootStaticAssets(){
   return {
@@ -13,17 +27,22 @@ function copyRootStaticAssets(){
       cpSync(resolve("images"), resolve(outputDir, "images"), { recursive: true });
 
       const indexPath = resolve(outputDir, "index.html");
-      const criticalCss = readFileSync(resolve("src/guide-critical.css"), "utf8");
+      // Inline the complete, minified stylesheet: no disabled styles, no
+      // duplicate critical rules, and no CSS request before the first paint.
       let indexHtml = readFileSync(indexPath, "utf8");
-      const stylesheetMatch = indexHtml.match(/<link rel="stylesheet" crossorigin href="(\.\/assets\/[^\"]+\.css)">/);
-      if(stylesheetMatch){
-        const [, stylesheetUrl] = stylesheetMatch;
-        const deferredStylesheet = `<style data-critical-guide>${criticalCss}</style>\n<link rel="stylesheet" data-app-styles href="${stylesheetUrl}" disabled><noscript><link rel="stylesheet" href="${stylesheetUrl}"></noscript>`;
-        indexHtml = indexHtml.replace(stylesheetMatch[0], deferredStylesheet);
-        writeFileSync(indexPath, indexHtml);
-      }
-      const assetUrls = [...new Set([...indexHtml.matchAll(/(?:src|href)="(\.\/assets\/[^\"]+)"/g)]
-        .map(([, url]) => url))];
+      indexHtml = indexHtml.replace(/<link rel="stylesheet" crossorigin href="(\.\/assets\/[^\"]+\.css)">/g, (_, url) => {
+        const css = readFileSync(resolve(outputDir, url), "utf8")
+          .replace(/url\(\.\//g, "url(./assets/");
+        return `<style data-app-styles>${css}</style>`;
+      });
+      writeFileSync(indexPath, indexHtml);
+      const assetUrls = [...new Set([
+        ...[...indexHtml.matchAll(/(?:src|href)="(\.\/assets\/[^\"]+)"/g)].map(([, url]) => url),
+        ...[...indexHtml.matchAll(/url\((\.\/assets\/[^)]+)\)/g)].map(([, url]) => url),
+        // Split lyrics and readings must also work on a first offline visit.
+        ...readdirSync(resolve(outputDir, "assets")).filter(file => file.endsWith(".js"))
+          .map(file => `./assets/${file}`)
+      ])];
       const serviceWorkerPath = resolve(outputDir, "sw.js");
       const serviceWorker = readFileSync(serviceWorkerPath, "utf8")
         .replace("const VITE_BUILD_ASSETS = [];", `const VITE_BUILD_ASSETS = ${JSON.stringify(assetUrls)};`);
@@ -34,7 +53,7 @@ function copyRootStaticAssets(){
 
 export default defineConfig({
   base: "./",
-  plugins: [copyRootStaticAssets()],
+  plugins: [prerenderHome(), copyRootStaticAssets()],
   server: {
     allowedHosts: ["vn7591g.tail12ac60.ts.net"]
   },
