@@ -13,6 +13,7 @@ This is a Vite static PWA for a Vaundy fan guide. Work from source files; `dist/
 When the user asks to publish, release, or deploy:
 
 1. Inspect status, remotes, and the upstream branch; resolve release scope before staging. Done when unrelated work is excluded.
-2. Bump the next patch version unless another version is requested. Synchronize `package.json`, both root version fields in `package-lock.json`, `src/main.js` (`BUILD`), and `sw.js` (`CACHE_VERSION`). Done when every shipped version marker matches.
-3. Run `npm run build` and `git diff --check`. Done when both succeed.
-4. Stage only the approved release files, create `chore(release): publish guide vX.Y.Z`, push to upstream, and verify the remote branch contains the new full commit SHA. Done when the remote readback matches; report the version, subject, and commit URL only then.
+2. Update `CHANGELOG.md` from the complete release scope. Use Traditional Chinese, follow its existing version-commit boundary and link format, put the newest section at the top, and cover every user-visible change in the release. Done when the new section is complete and contains no placeholder commit links.
+3. Bump the next patch version unless another version is requested. Synchronize `package.json`, both root version fields in `package-lock.json`, `src/main.js` (`BUILD`), and `sw.js` (`CACHE_VERSION`). Done when every shipped version marker matches.
+4. Run `npm run build` and `git diff --check`. Done when both succeed.
+5. Stage only the approved release files, create `chore(release): publish guide vX.Y.Z`, push to upstream, and verify the remote branch contains the new full commit SHA. If the changelog heading links to the release commit, fill in the final full SHA and amend the release commit before pushing. Done when the remote readback matches and the changelog has the final commit link; report the version, subject, and commit URL only then.

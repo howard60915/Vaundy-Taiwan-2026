@@ -2,6 +2,14 @@
 
 本檔案依 Git 歷史整理，使用版本提交作為每一段的邊界。
 
+## [**v1.8.25**](https://github.com/watain666/Vaundy-Taiwan-2026/commit/84025c84a1c31f6eff44c3151f41772ef37f2c6f) - [**v1.8.28**](https://github.com/watain666/Vaundy-Taiwan-2026/commit/dcba472ce471bbe82d64c0b5077f6cb5917ff057)
+
+- 調整手機版歌曲工具列的倍速與讀音控制寬度、字級和間距，讓控制項在小螢幕上更容易操作。
+- 在頁尾加入「更新日誌」，以彈出視窗顯示本檔案內容；支援關閉按鈕、背景點擊、Esc 鍵與鍵盤焦點返回。
+- 讓更新日誌視窗跟隨網站的深色／淺色主題，並縮小視窗尺寸、改善手機版的閱讀高度與間距。
+- 調整手機版頁尾的專案連結排列，保留 GitHub 專案與原始 Seoul 指南的來源資訊。
+- 新增較慢的歌曲播放倍速 `x0.25`、`x0.5`、`x0.75`；設定會保存，並依目前 YouTube 影片實際支援的倍速停用不適用選項。
+
 ## [**v1.8.20**](https://github.com/watain666/Vaundy-Taiwan-2026/commit/84e01a8351d0e44600b182dbf127516c0af83a9c) - [**v1.8.24**](https://github.com/watain666/Vaundy-Taiwan-2026/commit/b5df23c1f2766c8cb07af375e089d89a4a11f531)
 
 - 新增歌曲播放倍速控制，支援 `x1`、`x1.25`、`x1.5`、`x2`，並保存使用者選擇；切換歌曲時會依 YouTube 實際支援的倍速恢復設定，同步調整 BPM 應援動畫。
