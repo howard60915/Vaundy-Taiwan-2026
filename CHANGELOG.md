@@ -2,7 +2,7 @@
 
 本檔案依 Git 歷史整理，使用版本提交作為每一段的邊界。
 
-## [**v1.8.31**](https://github.com/watain666/Vaundy-Taiwan-2026/commit/f52018cfba539b8a7442f1a048b3ad9250f5b4eb)
+## [**v1.9.0**](https://github.com/watain666/Vaundy-Taiwan-2026/commit/RELEASE_COMMIT_SHA)
 
 - 新增桌面版 Document Picture-in-Picture 字幕浮窗，顯示目前句與下一句，並沿用日文、假名／羅馬字、繁中翻譯、ruby 讀音、應援標色與逐字 Karaoke 高亮。
 - 字幕浮窗會跟隨播放、暫停、seek、換歌、倍速、顯示設定與深淺色主題，提供播放／暫停、返回主頁與關閉控制；僅在支援 Document PiP 的桌面瀏覽器顯示入口。
