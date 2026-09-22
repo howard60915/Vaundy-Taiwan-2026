@@ -2,7 +2,7 @@
 
 本檔案依 Git 歷史整理，使用版本提交作為每一段的邊界。
 
-## [**v1.8.30**](https://github.com/watain666/Vaundy-Taiwan-2026/commit/e77dc02)
+## [**v1.8.30**](https://github.com/watain666/Vaundy-Taiwan-2026/commit/b109a718476b8583e3498d54c14c8c5855973a55)
 
 - 拆分〈不可幸力〉第二段副歌的「あれ、なに」與「それ、なに」為兩個歌詞段落，並同步更新日本版合唱時間、假名與羅馬字，讓應援提示與演唱節奏一致。
 
