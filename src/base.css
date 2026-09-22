@@ -655,6 +655,7 @@
     -ms-overflow-style:none;
   }
   .credits-links::-webkit-scrollbar{ display:none; }
+  .credits-origin{ display:contents; }
   .credits-link{
     display:inline-flex;
     align-items:center;
@@ -688,7 +689,13 @@
       overflow:visible;
       white-space:normal;
     }
-    .credits-links .credits-repo{ display:inline-flex; }
+    .credits-origin{
+      display:inline-flex;
+      align-items:center;
+      justify-content:center;
+      gap:8px;
+      max-width:100%;
+    }
     .credits-links .credits-fork,
     .credits-links .credits-link{
       max-width:100%;
