@@ -1,6 +1,6 @@
 import fs from "node:fs";
 import vm from "node:vm";
-import { SONGS } from "../src/data.js";
+import { SONG_LYRICS as SONGS } from "../src/song-lyrics.js";
 import { ROMAJI_CORRECTIONS } from "../src/furigana-corrections.js";
 import { JP_CHANT_GUIDES } from "../src/chant-guide.js";
 

@@ -1,11 +1,31 @@
-import { FURIGANA_CORRECTIONS, ROMAJI_CORRECTIONS } from "../furigana-corrections.js";
-
 let furiganaPromise = null;
 let karaokeSourcesPromise = null;
+let songLyricsPromise = null;
 let furiganaCorrectionsApplied = false;
+let correctionsPromise = null;
 
-function applyFuriganaCorrections(){
+export function loadSongLyrics(){
+  if (!songLyricsPromise){
+    songLyricsPromise = import("../song-lyrics.js")
+      .then(({ SONG_LYRICS }) => new Map(SONG_LYRICS.map(song => [song.id, song])))
+      .catch(() => new Map());
+  }
+  return songLyricsPromise;
+}
+
+function loadCorrections(){
+  if (!correctionsPromise){
+    correctionsPromise = import("../furigana-corrections.js")
+      .then(module => module)
+      .catch(() => null);
+  }
+  return correctionsPromise;
+}
+
+function applyFuriganaCorrections(corrections){
   if (furiganaCorrectionsApplied) return;
+  if (!corrections) return;
+  const { FURIGANA_CORRECTIONS, ROMAJI_CORRECTIONS } = corrections;
   if (window.JP_FURIGANA){
     window.JP_FURIGANA = Object.freeze({
       ...window.JP_FURIGANA,
@@ -24,14 +44,14 @@ function applyFuriganaCorrections(){
 
 export function loadFurigana(){
   if (window.JP_FURIGANA || window.JP_ROMAJI){
-    applyFuriganaCorrections();
-    return Promise.resolve();
+    return loadCorrections().then(applyFuriganaCorrections);
   }
   if (!furiganaPromise){
-    furiganaPromise = import("../../furigana.js")
-      .then(() => {
-        applyFuriganaCorrections();
-      })
+    furiganaPromise = Promise.all([
+      import("../../furigana.js"),
+      loadCorrections()
+    ])
+      .then(([, corrections]) => applyFuriganaCorrections(corrections))
       .catch(() => undefined);
   }
   return furiganaPromise;

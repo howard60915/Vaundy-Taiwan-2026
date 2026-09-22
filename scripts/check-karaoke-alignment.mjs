@@ -1,6 +1,6 @@
 import fs from "node:fs";
 import vm from "node:vm";
-import { SONGS } from "../src/data.js";
+import { SONG_LYRICS as SONGS } from "../src/song-lyrics.js";
 import { FURIGANA_CORRECTIONS, ROMAJI_CORRECTIONS } from "../src/furigana-corrections.js";
 
 const source = fs.readFileSync(new URL("../karaoke-sources.js", import.meta.url), "utf8");

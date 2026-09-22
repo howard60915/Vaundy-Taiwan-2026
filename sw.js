@@ -4,11 +4,11 @@
    ★ 가사나 화면을 고쳐서 다시 올릴 때는 아래 CACHE_VERSION 숫자를 꼭 올려 주세요.
      그래야 사람들 폰에 새 내용이 내려갑니다. (v1 → v2 → v3 …)
    ───────────────────────────────────────────────────────────── */
-const CACHE_VERSION = "v1.9.3";
+const CACHE_VERSION = "v1.9.4";
 const CACHE_NAME    = `horo-guide-${CACHE_VERSION}`;
 
-/* Vite production builds replace this with the hashed files in dist/assets.
-   The source version stays empty because it precaches the root files below. */
+/* Vite production builds replace this with the hashed entry files referenced
+   by dist/index.html. Lazy chunks are cached only after they are requested. */
 const VITE_BUILD_ASSETS = [];
 
 /* 처음 방문할 때 미리 받아 둘 핵심 파일들.
@@ -16,7 +16,6 @@ const VITE_BUILD_ASSETS = [];
 const PRECACHE = [
   "./",
   "./index.html",
-  "https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@400;500;600;700;800&display=swap",
   "./manifest.json",
   "./icon-192.png",
   "./icon-512.png",
@@ -27,7 +26,7 @@ const PRECACHE = [
   ...VITE_BUILD_ASSETS
 ];
 
-/* Noto Sans JP 由遠端提供，快取後讓日文歌詞離線時仍能維持完整字形。 */
+/* The route-loaded Noto Sans JP CSS and woff2 files are cached at runtime. */
 const RUNTIME_HOSTS = ["fonts.googleapis.com", "fonts.gstatic.com"];
 
 self.addEventListener("install", (event) => {

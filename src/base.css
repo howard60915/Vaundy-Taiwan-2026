@@ -360,6 +360,10 @@
     list-style:none;padding:0;
     border-top:1px solid var(--line);
   }
+  .song-list > li{
+    content-visibility:auto;
+    contain-intrinsic-size:0 82px;
+  }
   .song-row{
     width:100%;
     display:flex;align-items:center;gap:13px;
@@ -401,6 +405,10 @@
     flex:none;
     display:flex;align-items:center;gap:4px;
     margin-left:auto;
+  }
+  .song-marks-placeholder{
+    width:48px;
+    min-height:21px;
   }
   .song-mark{
     display:inline-flex;align-items:center;justify-content:center;gap:3px;
@@ -661,6 +669,8 @@
     align-items:center;
     gap:6px;
     flex:0 0 auto;
+    min-height:var(--control-height);
+    padding:8px;
     color:inherit;
     text-decoration:none;
     transition:color .2s ease;
@@ -670,7 +680,6 @@
   .credits-link:focus-visible{ color:var(--teal); }
   .credits-link.changelog-trigger{
     margin:0;
-    padding:0;
     border:0;
     background:none;
     font:inherit;
@@ -681,6 +690,8 @@
     align-items:center;
     justify-content:center;
     flex:0 0 auto;
+    min-height:var(--control-height);
+    padding:8px;
     white-space:nowrap;
     color:inherit;
     text-decoration:none;

@@ -2,6 +2,12 @@
 
 本檔案依 Git 歷史整理，使用版本提交作為每一段的邊界。
 
+## [**v1.9.4**](https://github.com/watain666/Vaundy-Taiwan-2026/commit/0000000000000000000000000000000000000000)
+
+- 延後指南首屏的完整 CSS、日文字型、歌詞與 YouTube 等非必要資源，保留首次互動後的搜尋、歌曲頁與同步功能。
+- 修正首屏圖示 sprite、圖例換行與圖片尺寸造成的版面位移，並改善頁尾對比度、觸控尺寸與空通知按鈕的無障礙狀態。
+- 補上 production 的 canonical、`robots.txt` 與 `sitemap.xml`，同步整理 Vite 靜態資產與 Service Worker 快取版本。
+
 ## [**v1.9.3**](https://github.com/watain666/Vaundy-Taiwan-2026/commit/6609b00c88403fb27d6746ed5d15144ff7967468)
 
 - 修正桌面 Document Picture-in-Picture 的逐字 Karaoke 與應援動作圖示在同步更新時反覆重建，避免動畫抽蓄、過快重播或卡住。

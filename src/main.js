@@ -52,16 +52,13 @@ import {
   JP_CHANT_GUIDES,
   CHANT_REFERENCE_URL
 } from "./chant-guide.js";
-import { loadFurigana, loadKaraokeSources } from "./services/lazy-modules.js";
+import { SONG_MARKS } from "./song-mark-metadata.js";
+import { loadFurigana, loadKaraokeSources, loadSongLyrics } from "./services/lazy-modules.js";
+import { loadJapaneseFontSubset } from "./services/japanese-font.js";
 import { store } from "./services/storage.js";
 import { createDocumentPip } from "./document-pip.js";
-import CHANGELOG_SOURCE from "../CHANGELOG.md?raw";
 
 const appBaseUrl = import.meta.env?.BASE_URL || "./";
-const manifestLink = document.createElement("link");
-manifestLink.rel = "manifest";
-manifestLink.href = `${appBaseUrl}manifest.json`;
-document.head.appendChild(manifestLink);
 
 const app = document.getElementById("app");
 const songView = document.getElementById("song-view");
@@ -88,6 +85,16 @@ let syncTicks = 0;      // 동기화가 몇 번 돌았는지 (진단용)
 let syncErr   = "";     // 재생 위치 읽기 실패 메시지 (진단용)
 let iconClockStartedAt = performance.now();
 
+function attachManifest(){
+  if (document.head.querySelector('link[rel="manifest"]')) return;
+  const manifestLink = document.createElement("link");
+  manifestLink.rel = "manifest";
+  manifestLink.href = `${appBaseUrl}manifest.json`;
+  document.head.appendChild(manifestLink);
+}
+
+window.addEventListener("load", ()=> window.setTimeout(attachManifest, 8000), { once: true });
+
 /* ── 가사 넘어가는 속도 조절값 (이 세 값만 바꾸면 됨) ──────────────
    SYNC_INTERVAL_MS : 재생 위치를 확인하는 주기(ms). 작을수록 빨리 반응.
    LYRIC_LEAD_SEC   : 가사를 실제 타이밍보다 몇 초 먼저 넘길지.
@@ -98,7 +105,7 @@ const SYNC_INTERVAL_MS   = 100;
 /* 지금 폰에 깔려 있는 화면이 몇 번째 판인지 알려 주는 표시.
    새로 올렸는데 화면이 그대로일 때, 옛 판이 남아 있는지 바로 확인할 수 있다.
    sw.js 의 CACHE_VERSION 과 같이 올려 주세요. */
-const BUILD = "v1.9.3";
+const BUILD = "v1.9.4";
 
 const REPO_URL = "https://github.com/watain666/Vaundy-Taiwan-2026";
 const FEEDBACK_URL = "https://www.threads.com/@brainginger/post/DdiLWztgen9";
@@ -232,6 +239,7 @@ let availablePlaybackRates = [];
 
 let scrollRafId = null;
 let currentSong = null;
+let songRenderToken = 0;
 let songKeyHandler = null;   // 곡 화면 키보드 단축키(← → Esc) 핸들러
 
 const themePreference = window.matchMedia("(prefers-color-scheme: dark)");
@@ -403,6 +411,8 @@ document.addEventListener("click", event => {
 function pad(n){ return String(n).padStart(2,"0"); }
 
 function router(){
+  cancelJapaneseFontLoad();
+  songListComplete = null;
   stopCountdown();
   teardownSetlistReveal();
   const hash = location.hash.replace(/^#\/?/, "");
@@ -500,6 +510,83 @@ let viewIdx     = 0;
 let noticeTrigger = null;
 let changelogTrigger = null;
 let changelogOwner = null;
+let changelogSourcePromise = null;
+let japaneseFontScheduleToken = 0;
+let japaneseFontInteractionCleanup = null;
+
+function scheduleJapaneseFontLoad(text, weights, { idle = false } = {}){
+  const token = ++japaneseFontScheduleToken;
+  const load = ()=>{
+    if (token !== japaneseFontScheduleToken) return;
+    loadJapaneseFontSubset(text, weights);
+  };
+  if (idle){
+    const scheduleIdle = ()=>{
+      if (typeof window.requestIdleCallback === "function"){
+        window.requestIdleCallback(load, { timeout: 1500 });
+      } else {
+        window.setTimeout(load, 1500);
+      }
+    };
+    if (typeof window.requestAnimationFrame === "function"){
+      window.requestAnimationFrame(scheduleIdle);
+    } else {
+      scheduleIdle();
+    }
+    return;
+  }
+  if (typeof window.requestAnimationFrame === "function"){
+    window.requestAnimationFrame(()=> window.setTimeout(load, 0));
+  } else {
+    window.setTimeout(load, 0);
+  }
+}
+
+function cancelJapaneseFontLoad(){
+  japaneseFontScheduleToken++;
+  japaneseFontInteractionCleanup?.();
+  japaneseFontInteractionCleanup = null;
+}
+
+function scheduleJapaneseFontAfterInteraction(text, weights, routeHash){
+  japaneseFontInteractionCleanup?.();
+  // Ignore programmatic route scrolling; load only after a real user interaction.
+  const events = ["pointerdown", "keydown", "touchstart"];
+  const onInteraction = ()=>{
+    if (location.hash !== routeHash){
+      japaneseFontInteractionCleanup?.();
+      japaneseFontInteractionCleanup = null;
+      return;
+    }
+    japaneseFontInteractionCleanup?.();
+    japaneseFontInteractionCleanup = null;
+    scheduleJapaneseFontLoad(text, weights, { idle: true });
+  };
+  const cleanup = ()=>{
+    events.forEach(type => window.removeEventListener(type, onInteraction));
+  };
+  japaneseFontInteractionCleanup = cleanup;
+  events.forEach(type => window.addEventListener(type, onInteraction, { passive: true }));
+}
+
+function guideJapaneseFontText(){
+  return SONGS.map(song => japaneseTitleText(song.title)).join("");
+}
+
+function japaneseTitleText(title){
+  const value = String(title ?? "");
+  const match = value.match(/\(([^()]*)\)/);
+  return match ? match[1] : value;
+}
+
+function songJapaneseFontText(song){
+  const guide = chantGuideFor(song, "jp");
+  return [
+    japaneseTitleText(song.title),
+    ...(song.lyrics || []).map(line => line.jp || ""),
+    ...(guide?.chantSegments || []).map(segment => segment.text || "")
+  ];
+}
 
 /* 사진 목록을 받아 눌러서 크게 볼 수 있는 격자를 만든다.
    · 파일이 없는 칸은 조용히 사라진다 (깨지지 않음)
@@ -529,6 +616,10 @@ function buildPicGrid(grid, list, ready, emptyEl){
                   + `<span class="cap">${escapeHtml(n.title)}</span>`;
     const img = btn.querySelector("img");
     img.loading = "lazy";
+    if (Number.isFinite(Number(n.width)) && Number.isFinite(Number(n.height))){
+      img.width = Number(n.width);
+      img.height = Number(n.height);
+    }
 
     img.addEventListener("load", ()=>{
       btn.hidden = false;
@@ -611,7 +702,14 @@ function paintNotice(){
   const zoom  = document.getElementById("nv-zoom");
   const scr   = document.getElementById("nv-scroll");
 
-  if (img){ img.src = n.src; img.alt = n.title; }
+  if (img){
+    img.src = n.src;
+    img.alt = n.title;
+    if (Number.isFinite(Number(n.width)) && Number.isFinite(Number(n.height))){
+      img.width = Number(n.width);
+      img.height = Number(n.height);
+    }
+  }
   if (title) title.textContent = n.title;
   if (count) count.textContent = (viewIdx + 1) + " / " + viewList.length;
   if (prev) prev.disabled = viewIdx === 0;
@@ -686,14 +784,32 @@ function setupNoticeViewer(){
   }, { passive:true });
 }
 
+function loadChangelogSource(){
+  if (!changelogSourcePromise){
+    changelogSourcePromise = import("../CHANGELOG.md?raw")
+      .then(module => module.default || "")
+      .catch(() => "");
+  }
+  return changelogSourcePromise;
+}
+
 function openChangelog(){
   const view = document.getElementById("changelog-view");
   const content = document.getElementById("changelog-content");
   if (!view || !content) return;
 
   if (content.dataset.rendered !== "1"){
-    content.innerHTML = renderChangelogMarkdown(CHANGELOG_SOURCE);
-    content.dataset.rendered = "1";
+    if (content.dataset.loading !== "1"){
+      content.dataset.loading = "1";
+      content.textContent = "載入版本記錄…";
+      loadChangelogSource().then(source => {
+        if (content.dataset.rendered === "1") return;
+        content.innerHTML = source
+          ? renderChangelogMarkdown(source)
+          : "<p>版本記錄暫時無法載入。</p>";
+        content.dataset.rendered = "1";
+      });
+    }
   }
 
   changelogTrigger = document.activeElement;
@@ -1314,19 +1430,9 @@ function renderGuide(){
           </div>
           <p class="song-legend-note">數字代表目前應援版本的大合唱歌詞行數。<br>切換歌曲時會依目前排序移動。<br>拍手・揮手提示會顯示在歌曲頁面。</p>
         </div>
-        <details class="chant-source-details">
+        <details class="chant-source-details" id="guide-chant-source">
           <summary>應援版本說明</summary>
-          ${chantSourceInfoHtml()}
-          <section class="chant-differences" aria-labelledby="chant-differences-title">
-            <div class="chant-differences-head">
-              <h2 id="chant-differences-title">日本版／韓國版差異</h2>
-              <button type="button" class="chant-differences-current chant-version-current" id="guide-chant-version-btn" data-chant-version-toggle aria-pressed="false" aria-label="切換應援版本：目前${chantVersionLabel()}，點擊切換">
-                目前 <span data-chant-version-flag aria-hidden="true">${chantVersionIcon()}</span>
-              </button>
-            </div>
-            <ul>${CHANT_DIFFERENCES.map(item => `<li>${escapeHtml(item)}</li>`).join("")}</ul>
-            <p class="chant-differences-footnote">未列入日本版歌單的歌曲會暫沿用現有標記，現場仍以 Vaundy 與觀眾的即時引導為準。</p>
-          </section>
+          <div id="guide-chant-source-content"></div>
         </details>
         <div class="song-search-sentinel" id="song-search-sentinel"></div>
         <div class="song-search">
@@ -1353,6 +1459,24 @@ function renderGuide(){
   `;
 
   document.getElementById("back-btn").addEventListener("click", ()=>{ location.hash = "#/"; });
+  const sourceDetails = document.getElementById("guide-chant-source");
+  const sourceContent = document.getElementById("guide-chant-source-content");
+  sourceDetails?.addEventListener("toggle", ()=>{
+    if (!sourceDetails.open || !sourceContent || sourceContent.dataset.loaded === "1") return;
+    sourceContent.innerHTML = `${chantSourceInfoHtml()}
+      <section class="chant-differences" aria-labelledby="chant-differences-title">
+        <div class="chant-differences-head">
+          <h2 id="chant-differences-title">日本版／韓國版差異</h2>
+          <button type="button" class="chant-differences-current chant-version-current" id="guide-chant-version-btn" data-chant-version-toggle aria-pressed="false" aria-label="切換應援版本：目前${chantVersionLabel()}，點擊切換">
+            目前 <span data-chant-version-flag aria-hidden="true">${chantVersionIcon()}</span>
+          </button>
+        </div>
+        <ul>${CHANT_DIFFERENCES.map(item => `<li>${escapeHtml(item)}</li>`).join("")}</ul>
+        <p class="chant-differences-footnote">未列入日本版歌單的歌曲會暫沿用現有標記，現場仍以 Vaundy 與觀眾的即時引導為準。</p>
+      </section>`;
+    sourceContent.dataset.loaded = "1";
+    applyChantVersionUi();
+  });
   applyChantVersionUi();
 
   // 정렬 칩 — '떼창'은 다시 누르면 많은 순 ↔ 적은 순이 바뀐다
@@ -1364,12 +1488,13 @@ function renderGuide(){
       else if (kind === "title") songSort = (songSort === "title")      ? "title-desc" : "title";
       else                       songSort = kind;
       store("horo-song-sort", songSort);
-      paintSongList();
+      paintSongList({ eager: true });
     });
   });
 
   setupSongSearch();
   paintSongList();
+  scheduleJapaneseFontAfterInteraction(guideJapaneseFontText(), [500], "#/guide");
 }
 
 /* ---------------- SETLIST (스포일러) ----------------
@@ -1591,6 +1716,9 @@ function paintSetlist(){
       gotoSong(target);
     });
   });
+  scheduleJapaneseFontAfterInteraction(SETLIST_TOKYO.items
+    .map(entry => japaneseTitleText(setlistTitle(entry)))
+    .join(""), [500], "#/setlist");
 }
 
 function renderSetlist(){
@@ -1846,30 +1974,100 @@ function toCho(str){
   }).join("");
 }
 const squash = (str) => String(str).toLowerCase().replace(/\s+/g, "");
+let songListRenderToken = 0;
+let songListComplete = null;
+let songListScrollHandler = null;
+let songListSentinel = null;
 
 /* 고른 순서대로 목록을 다시 그린다 (검색어는 그대로 유지) */
-function paintSongList(){
+function paintSongList({ eager = false } = {}){
   const ul = document.getElementById("song-list");
   if (!ul) return;
 
-  ul.innerHTML = sortedSongs().map(s=>`
-    <li data-no="${songNo(s)}">
-      <button class="song-row" data-id="${escapeHtml(s.id)}">
-        <span class="song-num">${pad(songNo(s))}</span>
-        <span class="song-title">${renderSongTitle(s.title)}</span>
-        ${songMarksHtml(s)}
-      </button>
-    </li>`).join("");
+  if (songListScrollHandler){
+    window.removeEventListener("scroll", songListScrollHandler);
+    songListScrollHandler = null;
+  }
+  songListSentinel?.remove();
+  songListSentinel = null;
 
-  // 곡을 탭한 그 순간 바로 재생을 시작시킨다 (모바일 소리 허용을 위해)
-  ul.querySelectorAll(".song-row").forEach(btn=>{
-    btn.addEventListener("click", ()=>{
+  const songs = sortedSongs();
+  const renderToken = ++songListRenderToken;
+  songListComplete = null;
+  ul.dataset.total = String(songs.length);
+  ul.innerHTML = "";
+
+  // The list is rebuilt on sorting, so one delegated listener avoids 36 handlers per pass.
+  if (ul.dataset.clickBound !== "1"){
+    ul.dataset.clickBound = "1";
+    ul.addEventListener("click", event=>{
+      const btn = event.target.closest(".song-row");
+      if (!btn || !ul.contains(btn)) return;
       const target = SONGS.find(x => x.id === btn.dataset.id);
       if (!target) return;
       setSongFrom("guide");     // 여기서 들어왔으니 '뒤로'는 곡 목록으로
       gotoSong(target);
     });
-  });
+    ul.addEventListener("focusin", ()=>songListComplete?.());
+  }
+
+  let nextIndex = 0;
+  const renderChunk = ({ filter = true, includeMarks = true } = {}) => {
+    if (renderToken !== songListRenderToken || !ul.isConnected) return;
+    const end = Math.min(nextIndex + 4, songs.length);
+    const markup = songs.slice(nextIndex, end).map(s=>`
+      <li data-no="${songNo(s)}">
+        <button class="song-row" data-id="${escapeHtml(s.id)}">
+          <span class="song-num">${pad(songNo(s))}</span>
+          <span class="song-title">${renderSongTitle(s.title)}</span>
+          ${includeMarks ? songMarksHtml(s) : '<span class="song-marks song-marks-placeholder" aria-hidden="true"></span>'}
+        </button>
+      </li>`).join("");
+    if (songListSentinel?.isConnected) songListSentinel.insertAdjacentHTML("beforebegin", markup);
+    else ul.insertAdjacentHTML("beforeend", markup);
+    nextIndex = end;
+    if (filter) applyGuideFilter();
+  };
+  const complete = ()=>{
+    if (renderToken !== songListRenderToken || !ul.isConnected) return;
+    if (songListScrollHandler){
+      window.removeEventListener("scroll", songListScrollHandler);
+      songListScrollHandler = null;
+    }
+    songListSentinel?.remove();
+    songListSentinel = null;
+    while (nextIndex < songs.length) renderChunk({ filter: false, includeMarks: true });
+    const byNo = new Map(songs.map(song => [String(songNo(song)), song]));
+    ul.querySelectorAll(".song-marks-placeholder").forEach(placeholder=>{
+      const row = placeholder.closest("li");
+      const song = row && byNo.get(row.dataset.no);
+      placeholder.outerHTML = song ? songMarksHtml(song) : "";
+    });
+    songListComplete = null;
+    applyGuideFilter();
+  };
+  songListComplete = complete;
+  renderChunk({ includeMarks: true });
+  if (eager) complete();
+  else if (nextIndex < songs.length){
+    songListSentinel = document.createElement("li");
+    songListSentinel.className = "song-list-sentinel";
+    songListSentinel.setAttribute("aria-hidden", "true");
+    ul.appendChild(songListSentinel);
+    let scrollFrame = null;
+    const loadRowsNearViewport = ()=>{
+      scrollFrame = null;
+      if (renderToken !== songListRenderToken || !ul.isConnected || !songListSentinel?.isConnected) return;
+      if (songListSentinel.getBoundingClientRect().top > window.innerHeight + 480) return;
+      renderChunk({ includeMarks: true });
+      if (nextIndex < songs.length) renderChunk({ includeMarks: true });
+      if (nextIndex >= songs.length) complete();
+    };
+    songListScrollHandler = ()=>{
+      if (scrollFrame === null) scrollFrame = window.requestAnimationFrame(loadRowsNearViewport);
+    };
+    window.addEventListener("scroll", songListScrollHandler, { passive: true });
+  }
 
   // 어느 칩이 켜져 있는지 + 떼창 방향 표시
   app.querySelectorAll(".song-sort").forEach(b=>{
@@ -1903,8 +2101,9 @@ function applyGuideFilter(){
   const clear = document.getElementById("song-search-clear");
   const count = document.getElementById("song-count");
   const empty = document.getElementById("song-empty");
-  const items = document.querySelectorAll("#song-list > li");
+  const items = document.querySelectorAll("#song-list > li[data-no]");
   if (!input || !items.length) return;
+  const total = Number(document.getElementById("song-list")?.dataset.total) || items.length;
 
   // "5", "05", "5번" 모두 5번 곡으로 인식
   const q = squash(input.value).replace(/번$/, "");
@@ -1921,7 +2120,7 @@ function applyGuideFilter(){
     if (ok) hit++;
   });
 
-  if (count) count.textContent = q ? `搜尋結果 ${hit} 首` : `共 ${items.length} 首`;
+  if (count) count.textContent = q ? `搜尋結果 ${hit} 首` : `共 ${total} 首`;
   if (empty) empty.hidden = hit !== 0;
   if (clear) clear.classList.toggle("show", !!input.value);
 }
@@ -1942,8 +2141,8 @@ function setupSongSearch(){
     }, { threshold: 0 }).observe(sentinel);
   }
 
-  input.addEventListener("input", apply);
-  clear.addEventListener("click", ()=>{ input.value = ""; apply(); input.focus(); });
+  input.addEventListener("input", ()=>{ songListComplete?.(); apply(); });
+  clear.addEventListener("click", ()=>{ songListComplete?.(); input.value = ""; apply(); input.focus(); });
   apply();
 }
 
@@ -2519,6 +2718,7 @@ function setChantVersion(next){
   chantVersion = next;
   store("horo-chant-version", chantVersion);
   songMarksCache.clear();
+  jpChantTimeCache.clear();
   chantBlockCache.clear();
   chantIdx = -1;
   chantDone = false;
@@ -2696,7 +2896,31 @@ function applySongTempo(song){
 }
 
 function renderSong(song){
+  const renderToken = ++songRenderToken;
   buildSongShell();
+
+  if (!Array.isArray(song.lyrics)){
+    currentSong = song;
+    const { prev, next } = songNeighbors(song);
+    const page = document.getElementById("song-page");
+    document.getElementById("song-page-heading").textContent = song.title;
+    document.getElementById("song-picker-title").innerHTML = renderSongTitle(song.title);
+    document.getElementById("prev-song").title = `上一首：${prev.title}`;
+    document.getElementById("next-song").title = `下一首：${next.title}`;
+    document.getElementById("lyrics-list").innerHTML = "";
+    document.getElementById("video-status").textContent = "正在載入歌詞…";
+    page?.classList.remove("song-ready");
+    songView.classList.remove("offstage");
+    songView.inert = false;
+    app.style.display = "none";
+
+    loadSongLyrics().then(songMap => {
+      if (renderToken !== songRenderToken || !location.hash.startsWith("#/song/")) return;
+      const fullSong = songMap.get(song.id);
+      if (fullSong) renderSong({ ...song, ...fullSong });
+    });
+    return;
+  }
 
   loadFurigana().then(()=>{
     if (currentSong === song) repaintJapaneseReadings();
@@ -2804,9 +3028,11 @@ function renderSong(song){
   if (scroller) scroller.scrollTop = 0;
 
   showVideoStatus();
+  loadYouTubeApi();
   ensurePlayer();
   ensurePlaying(song.youtubeId);
   loadKaraokeTiming(song);
+  scheduleJapaneseFontLoad(songJapaneseFontText(song), [400, 500, 700]);
 }
 
 /* 보이는 가사 줄에만 .in-view 를 붙여, 화면 밖 아이콘 애니메이션은 멈춰 둔다.
@@ -4033,9 +4259,19 @@ function updateKaraokeProgress(line, time){
   });
 }
 
+const ICON_TOKEN_PATTERNS = {
+  wave: /[\[(]wave[\])]/i,
+  clap: /[\[(]clap[\])]/i,
+  jump: /[\[(]jump[\])]/i,
+  spin: /[\[(]spin[\])]/i,
+  turn: /[\[(]turn[\])]/i,
+  mic: /[\[(]mic[\])]/i,
+  chant: /[\[(]chant[\])]/i
+};
+
 function hasIconToken(str, name){
   if (typeof str !== "string") return false;
-  return new RegExp(`[\\[(]${name}[\\])]`, "i").test(str);
+  return ICON_TOKEN_PATTERNS[name]?.test(str) || false;
 }
 
 // 한 줄의 jp 조각들을 훑어서 박수·동작 아이콘과 현재 선택한
@@ -4084,18 +4320,41 @@ function lineIsChantJp(line, song){
   if (!guide) return lineIsChantKr(line);
   const time = Number(line.time);
   if (!Number.isFinite(time)) return false;
-  const fullLine = Array.isArray(guide.chantTimes)
-    && guide.chantTimes.some(mark => Math.abs(Number(mark) - time) < 0.01);
-  const partialLine = Array.isArray(guide.chantSegments)
-    && guide.chantSegments.some(segment => segment && Math.abs(Number(segment.time) - time) < 0.01);
-  return fullLine || partialLine;
+  const matcher = jpChantTimeMatcher(song);
+  return hasChantTime(matcher.any, time);
 }
 
 function lineIsFullChantJp(line, song){
   const guide = song && JP_CHANT_GUIDES[song.id];
   const time = Number(line && line.time);
-  return Boolean(guide && Number.isFinite(time) && Array.isArray(guide.chantTimes)
-    && guide.chantTimes.some(mark => Math.abs(Number(mark) - time) < 0.01));
+  return Boolean(guide && Number.isFinite(time)
+    && hasChantTime(jpChantTimeMatcher(song).full, time));
+}
+
+const jpChantTimeCache = new Map();
+
+function jpChantTimeMatcher(song){
+  const cacheKey = `${chantVersion}:${song.id}`;
+  if (jpChantTimeCache.has(cacheKey)) return jpChantTimeCache.get(cacheKey);
+  const guide = JP_CHANT_GUIDES[song.id] || {};
+  const toBuckets = values => new Set((values || [])
+    .map(value => Number(value))
+    .filter(Number.isFinite)
+    .map(value => Math.round(value * 100)));
+  const full = toBuckets(guide.chantTimes);
+  const any = new Set(full);
+  (guide.chantSegments || []).forEach(segment => {
+    const bucket = Number(segment && segment.time);
+    if (Number.isFinite(bucket)) any.add(Math.round(bucket * 100));
+  });
+  const matcher = { full, any };
+  jpChantTimeCache.set(cacheKey, matcher);
+  return matcher;
+}
+
+function hasChantTime(buckets, time){
+  const bucket = Math.round(Number(time) * 100);
+  return buckets.has(bucket - 1) || buckets.has(bucket) || buckets.has(bucket + 1);
 }
 
 function chantLineClass(line, song = currentSong){
@@ -4167,6 +4426,19 @@ function songMarks(song){
   const cacheKey = `${chantVersion}:${song.id}`;
   if (songMarksCache.has(cacheKey)) return songMarksCache.get(cacheKey);
 
+  const guideMarks = SONG_MARKS[song.id];
+  if (!song.lyrics && guideMarks){
+    const mark = {
+      chant: guideMarks.chant?.[chantVersion] || 0,
+      clap: Boolean(guideMarks.clap),
+      wave: Boolean(guideMarks.wave),
+      jump: Boolean(guideMarks.jump),
+      spin: Boolean(guideMarks.spin)
+    };
+    songMarksCache.set(cacheKey, mark);
+    return mark;
+  }
+
   const mark = { chant: 0, clap: false, wave: false, jump: false, spin: false };
 
   (song.lyrics || []).forEach(line => {
@@ -4205,7 +4477,8 @@ let songSort = (()=>{
 })();
 
 /* 곡의 원래 번호(1부터). 정렬을 바꿔도 이 번호는 그대로라 번호 검색이 계속 통한다. */
-function songNo(song){ return SONGS.findIndex(s => s.id === song.id) + 1; }
+const songNumberById = new Map(SONGS.map((song, index) => [song.id, index + 1]));
+function songNo(song){ return songNumberById.get(song.id) || 0; }
 
 const startsHangul = (t)=> /^[\u3131-\u318E\uAC00-\uD7A3]/.test(String(t).trim());
 function byTitle(a, b){
@@ -4701,12 +4974,16 @@ function showBanner(html, btnLabel, onClick, kind, onDismiss){
   bannerAction = onClick || null;
   bannerDismissAction = onDismiss || null;
   bannerBtn.textContent = btnLabel || "";
-  bannerBtn.style.display = btnLabel ? "" : "none";
+  bannerBtn.hidden = !btnLabel;
   banner.classList.toggle("offline", kind === "offline");
   banner.classList.add("show");
 }
 function hideBanner(){
   if (banner) banner.classList.remove("show");
+  if (bannerBtn){
+    bannerBtn.hidden = true;
+    bannerBtn.textContent = "";
+  }
   bannerAction = null;
   bannerDismissAction = null;
 }
@@ -4743,30 +5020,35 @@ function showInstallHint(html, btnLabel, onClick){
   showBanner(html, btnLabel, onClick, "install", dismissInstallHint);
 }
 
-/* 1) 서비스워커 등록 — 오프라인에서도 가사가 열리게 */
+/* 1) 서비스워커 등록 — 오프라인에서도 가사가 열리게.
+   The first install is deliberately outside the initial-view critical path. */
 if ("serviceWorker" in navigator && location.protocol.startsWith("http")) {
   window.addEventListener("load", ()=>{
-    navigator.serviceWorker.register(`./sw.js?build=${BUILD}`).then((reg)=>{
-      reg.addEventListener("updatefound", ()=>{
-        const sw = reg.installing;
-        if (!sw) return;
-        sw.addEventListener("statechange", ()=>{
-          // 이미 쓰고 있는 상태에서 새 버전이 준비된 경우에만 안내
-          if (sw.state === "installed" && navigator.serviceWorker.controller){
-            showBanner("<b>新版本</b>已準備完成，歌詞或介面可能已更新。",
-                       "重新整理",
-                       ()=>{ sw.postMessage({ type:"SKIP_WAITING" }); });
-          }
+    window.setTimeout(()=>{
+      const hadController = Boolean(navigator.serviceWorker.controller);
+      navigator.serviceWorker.register(`./sw.js?build=${BUILD}`).then((reg)=>{
+        reg.addEventListener("updatefound", ()=>{
+          const sw = reg.installing;
+          if (!sw) return;
+          sw.addEventListener("statechange", ()=>{
+            // 이미 쓰고 있는 상태에서 새 버전이 준비된 경우에만 안내
+            if (sw.state === "installed" && navigator.serviceWorker.controller){
+              showBanner("<b>新版本</b>已準備完成，歌詞或介面可能已更新。",
+                         "重新整理",
+                         ()=>{ sw.postMessage({ type:"SKIP_WAITING" }); });
+            }
+          });
         });
-      });
-    }).catch(()=>{});
+      }).catch(()=>{});
 
-    let reloading = false;
-    navigator.serviceWorker.addEventListener("controllerchange", ()=>{
-      if (reloading) return;
-      reloading = true;
-      location.reload();
-    });
+      let reloading = false;
+      navigator.serviceWorker.addEventListener("controllerchange", ()=>{
+        // 首次安裝只讓 Service Worker 接管，避免首次訪問多一次 reload。
+        if (!hadController || reloading) return;
+        reloading = true;
+        location.reload();
+      });
+    }, 8000);
   });
 }
 
@@ -4813,8 +5095,7 @@ setTimeout(()=>{ updateOnlineState(); maybeShowInstallHint(); }, 1500);
 
 window.addEventListener("hashchange", router);
 
-// YouTube API는 홈 화면을 그린 뒤에 느긋하게 불러온다.
-// 첫 화면에서 외부 스크립트가 렌더링을 막지 않도록 동적으로 추가한다.
+// YouTube API는 실제로歌曲頁需要播放器時才載入，避免 Guide 首屏引入第三方工作。
 function loadYouTubeApi(){
   if (window.YT && window.YT.Player){
     if (isSongViewActive()) ensurePlayer();
@@ -4830,8 +5111,6 @@ function loadYouTubeApi(){
   script.dataset.youtubeApi = "true";
   document.head.appendChild(script);
 }
-const scheduleIdle = window.requestIdleCallback || ((callback)=>setTimeout(callback, 1200));
-scheduleIdle(loadYouTubeApi);
 setupDebugBadge();
 setupChangelogModal();
 

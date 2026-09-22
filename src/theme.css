@@ -440,6 +440,7 @@ button{touch-action:manipulation;}
   --ui-muted:#64646b;
   --ui-line:#e8e8eb;
   --ui-accent:#755724;
+  --chant:#9a4000;
   --ui-hover:rgba(29,29,31,.055);
   --ui-warning:#9a4b35;
   --dock-surface:rgba(255,255,255,.68);
@@ -822,7 +823,7 @@ button{touch-action:manipulation;}
 :root[data-theme="light"] .lyrics-list:has(.lyric-line.active) .lyric-line:not(.active){opacity:.55;}
 
 /* 화면 판 번호 — 아주 작게, 눈에 거슬리지 않게 */
-.credits .build{opacity:.45;font-variant-numeric:tabular-nums;}
+.credits .build{font-variant-numeric:tabular-nums;}
 
 
 /* ── iOS 잔상 대책 ────────────────────────────────────────────────
