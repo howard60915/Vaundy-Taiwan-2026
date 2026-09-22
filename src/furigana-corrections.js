@@ -11,6 +11,9 @@ export const FURIGANA_CORRECTIONS = Object.freeze({
   "[wave]キスをしあって生きている": "[wave]キスをしあって<ruby>生<rt>い</rt></ruby>きている",
   "[clap]あれ、なに、わからないよ": "[clap]あれ、なに、わからないよ",
   "[clap]それ、なに、甘い理想に落ちる": "[clap]それ、なに、<ruby>甘<rt>あま</rt></ruby>い<ruby>理想<rt>りそう</rt></ruby>に<ruby>落<rt>お</rt></ruby>ちる",
+  "思い出すこともなくなって しまうんだろう しまうんだろうって": "<ruby>思<rt>おも</rt></ruby>い<ruby>出<rt>だ</rt></ruby>すこともなくなって しまうんだろう しまうんだろうって",
+  "[wave]ホムンクルス!": "[wave]ホムンクルス!",
+  "[wave]イデアが溢れて眠れない x 4": "[wave]イデアが<ruby>溢<rt>あふ</rt></ruby>れて<ruby>眠<rt>ねむ</rt></ruby>れない x 4",
   "[clap]聞かせてくれよ 聞きたいんだ": "[clap]<ruby>聞<rt>き</rt></ruby>かせてくれよ <ruby>聞<rt>き</rt></ruby>きたいんだ",
   "[clap]君に似合うんだよ ずっと見ていたいよ": "[clap]<ruby>君<rt>きみ</rt></ruby>に<ruby>似合<rt>にあ</rt></ruby>うんだよ ずっと<ruby>見<rt>み</rt></ruby>ていたいよ",
   "[wave]君がいつも  歌う怪獣の歌": "[wave]<ruby>君<rt>きみ</rt></ruby>がいつも  <ruby>歌<rt>うた</rt></ruby>う<ruby>怪獣<rt>かいじゅう</rt></ruby>の<ruby>歌<rt>うた</rt></ruby>",
@@ -46,6 +49,9 @@ export const ROMAJI_CORRECTIONS = Object.freeze({
   "[wave]キスをしあって生きている": "[wave]kisu o shi atte iki te iru",
   "[clap]あれ、なに、わからないよ": "[clap]are, nani, wakara nai yo",
   "[clap]それ、なに、甘い理想に落ちる": "[clap]sore, nani, amai risō ni ochiru",
+  "思い出すこともなくなって しまうんだろう しまうんだろうって": "omoidasu koto mo nakunatte shimau n darō shimau n darō tte",
+  "[wave]ホムンクルス!": "[wave]homunkurusu!",
+  "[wave]イデアが溢れて眠れない x 4": "[wave]idea ga afure te nemure nai x 4",
   "もっと": "motto",
 
   /* Lines split out of the generated table still need their own exact key.
