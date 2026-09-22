@@ -2,6 +2,12 @@
 
 This is a Vite static PWA for a Vaundy fan guide. Work from source files; `dist/` is generated output. Preserve existing user changes and keep each patch limited to the requested scope.
 
+## Commits and versioning
+
+- Use Conventional Commits for every commit: `<type>(<scope>): <summary>`, with an optional scope. Use `feat` for user-visible functionality, `fix` for bug fixes, and `docs`, `refactor`, `style`, `perf`, `test`, `build`, `ci`, or `chore` for the corresponding work. Keep release commits exactly `chore(release): publish guide vX.Y.Z`; use `docs(changelog): link vX.Y.Z release commit` for the follow-up changelog link commit.
+- Select the SemVer bump from the complete release scope before editing version markers. Use a `MAJOR` bump for breaking or incompatible changes, a `MINOR` bump for a new backward-compatible user-visible capability or substantial feature, and a `PATCH` bump for fixes, content or timing corrections, documentation, styling, refactors, and maintenance without a new capability. A large feature such as a new desktop mode must advance the minor version, for example `1.8.x` to `1.9.0`.
+- Keep the selected version consistent across the changelog heading, `package.json`, both root version fields in `package-lock.json`, `src/main.js` (`BUILD`), and `sw.js` (`CACHE_VERSION`). Done when the commit subjects and version bump match the release scope.
+
 ## Workflow
 
 1. Inspect `git status --short --branch`, the relevant files, and `package.json` before editing. Read `DESIGN.md` for visual or accessibility work and the relevant `README.md` section for user-facing behavior. Done when the affected files and verification command are clear.
@@ -14,6 +20,6 @@ When the user asks to publish, release, or deploy:
 
 1. Inspect status, remotes, and the upstream branch; resolve release scope before staging. Done when unrelated work is excluded.
 2. Update `CHANGELOG.md` from the complete release scope. Use Traditional Chinese, follow its existing version-commit boundary and link format, put the newest section at the top, and cover every user-visible change in the release. Resolve every song name through the Japanese original title in `src/data.js` (for example, `〈不可幸力〉` and `〈恋風邪にのせて〉`) before writing it. Done when the new section is complete, uses Japanese song titles, and contains no placeholder commit links.
-3. Bump the next patch version unless another version is requested. Synchronize `package.json`, both root version fields in `package-lock.json`, `src/main.js` (`BUILD`), and `sw.js` (`CACHE_VERSION`). Done when every shipped version marker matches.
+3. Apply the SemVer bump selected above. Synchronize `package.json`, both root version fields in `package-lock.json`, `src/main.js` (`BUILD`), and `sw.js` (`CACHE_VERSION`). Done when every shipped version marker matches the selected release version.
 4. Run `npm run build` and `git diff --check`. Done when both succeed.
 5. Stage only the approved release files, create `chore(release): publish guide vX.Y.Z`, push to upstream, and verify the remote branch contains the new full commit SHA. If the changelog heading links to the release commit, fill in the final full SHA and amend the release commit before pushing. Done when the remote readback matches and the changelog has the final commit link; report the version, subject, and commit URL only then.
