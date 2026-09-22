@@ -90,6 +90,19 @@
   </div>
 </div>
 
+<!-- 更新日誌 Modal；內容由 Vite 直接讀取 CHANGELOG.md -->
+<div class="notice-view changelog-view" id="changelog-view" role="dialog" aria-modal="true" aria-labelledby="changelog-title" aria-hidden="true" inert>
+  <div class="changelog-panel">
+    <div class="nv-head">
+      <h2 class="nv-title" id="changelog-title">更新日誌</h2>
+      <button class="nv-btn close" id="changelog-close" type="button" aria-label="關閉更新日誌">✕</button>
+    </div>
+    <div class="nv-scroll changelog-scroll" id="changelog-scroll">
+      <article class="changelog-content" id="changelog-content"></article>
+    </div>
+  </div>
+</div>
+
 <div class="app-banner" id="app-banner" role="status">
   <span class="msg" id="app-banner-msg"></span>
   <button type="button" id="app-banner-action"></button>

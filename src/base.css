@@ -668,6 +668,14 @@
   .credits-link svg{ width:15px;height:15px;flex:none; }
   .credits-link:hover,
   .credits-link:focus-visible{ color:var(--teal); }
+  .credits-link.changelog-trigger{
+    margin:0;
+    padding:0;
+    border:0;
+    background:none;
+    font:inherit;
+    cursor:pointer;
+  }
   .credits-fork{
     display:inline-flex;
     align-items:center;
@@ -2265,6 +2273,104 @@
   .nv-btn.close{
     flex:none;width:34px;height:34px;padding:0;
     border-radius:50%;font-size:14px;
+  }
+
+  /* ── 更新日誌 ─────────────────────────────────────────────── */
+  .changelog-view{
+    align-items:center;
+    justify-content:center;
+    padding:16px;
+    background:rgba(10,3,2,.72);
+    backdrop-filter:blur(2px);
+  }
+  .changelog-panel{
+    display:flex;
+    flex-direction:column;
+    width:min(100%,760px);
+    max-height:min(86vh,760px);
+    overflow:hidden;
+    border:1px solid var(--line);
+    border-radius:16px;
+    background:#0a0302;
+    box-shadow:0 18px 50px rgba(0,0,0,.42);
+  }
+  .changelog-view .nv-title{
+    margin:0;
+    font-weight:700;
+    line-height:1.3;
+  }
+  .changelog-scroll{
+    min-height:0;
+    padding:18px 16px 30px;
+  }
+  .changelog-content{
+    width:min(100%,720px);
+    margin:0 auto;
+    color:var(--cream);
+    font-size:13px;
+    line-height:1.7;
+    overflow-wrap:anywhere;
+  }
+  .changelog-content h1,
+  .changelog-content h2,
+  .changelog-content h3{
+    font-family:var(--font-tw-sans);
+    text-shadow:none;
+  }
+  .changelog-content h1{
+    margin:0 0 14px;
+    color:var(--gold);
+    font-size:clamp(22px,6vw,28px);
+    line-height:1.25;
+  }
+  .changelog-content h2{
+    margin:24px 0 9px;
+    padding-bottom:7px;
+    border-bottom:1px solid var(--line);
+    color:var(--cream);
+    font-size:15px;
+    line-height:1.45;
+  }
+  .changelog-content h3{
+    margin:18px 0 7px;
+    color:var(--gold-soft);
+    font-size:14px;
+  }
+  .changelog-content p{
+    margin:0 0 13px;
+    color:#cbb99b;
+  }
+  .changelog-content ul{
+    display:grid;
+    gap:8px;
+    margin:0 0 18px;
+    padding-left:22px;
+  }
+  .changelog-content li{ color:#cbb99b; }
+  .changelog-content li::marker{ color:var(--teal); }
+  .changelog-content a{
+    color:var(--teal);
+    text-decoration:underline;
+    text-decoration-thickness:1px;
+    text-underline-offset:2px;
+  }
+  .changelog-content a:hover,
+  .changelog-content a:focus-visible{ color:var(--cream); }
+  .changelog-content code{
+    padding:1px 5px;
+    border:1px solid var(--line);
+    border-radius:5px;
+    background:rgba(0,0,0,.22);
+    color:var(--gold-soft);
+    font:11.5px/1.4 ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;
+  }
+  .changelog-content strong{ color:var(--gold); }
+  @media (max-width:600px){
+    .changelog-view{ padding:10px; }
+    .changelog-panel{ max-height:90vh; border-radius:14px; }
+    .changelog-scroll{ padding:16px 14px 26px; }
+    .changelog-content{ font-size:12.5px; }
+    .changelog-content h2{ font-size:14px; }
   }
 
   /* ── 座位配置圖 ──────────────────────────────────────────────

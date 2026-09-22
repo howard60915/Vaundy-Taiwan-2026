@@ -53,6 +53,7 @@ import {
 } from "./chant-guide.js";
 import { loadFurigana, loadKaraokeSources } from "./services/lazy-modules.js";
 import { store } from "./services/storage.js";
+import CHANGELOG_SOURCE from "../CHANGELOG.md?raw";
 
 const appBaseUrl = import.meta.env?.BASE_URL || "./";
 const manifestLink = document.createElement("link");
@@ -123,9 +124,71 @@ function siteFooterHtml(){
         <a class="credits-link" href="${FEEDBACK_URL}" target="_blank" rel="noopener" aria-label="意見回饋" title="意見回饋">
           <span>意見回饋</span>
         </a>
+        <button class="credits-link changelog-trigger" type="button" data-open-changelog aria-haspopup="dialog" aria-controls="changelog-view">
+          更新日誌
+        </button>
       </nav>
     </footer>
   `;
+}
+
+function renderInlineMarkdown(value){
+  let html = escapeHtml(value);
+  const tokens = [];
+  const stash = markup => {
+    const token = `\u0000${tokens.length}\u0000`;
+    tokens.push(markup);
+    return token;
+  };
+
+  html = html.replace(/`([^`]+)`/g, (_, code) => stash(`<code>${code}</code>`));
+  html = html.replace(/\[([^\]]+)\]\((https?:\/\/[^)\s]+)\)/g, (_, label, url) =>
+    stash(`<a href="${url}" target="_blank" rel="noopener">${renderInlineMarkdown(label)}</a>`)
+  );
+  html = html.replace(/\*\*([^*]+)\*\*/g, "<strong>$1</strong>");
+
+  return html.replace(/\u0000(\d+)\u0000/g, (_, index) => tokens[Number(index)] || "");
+}
+
+function renderChangelogMarkdown(markdown){
+  const output = [];
+  let listOpen = false;
+  const closeList = ()=>{
+    if (!listOpen) return;
+    output.push("</ul>");
+    listOpen = false;
+  };
+
+  String(markdown || "").replace(/\r\n?/g, "\n").split("\n").forEach(rawLine=>{
+    const line = rawLine.trim();
+    if (!line){
+      closeList();
+      return;
+    }
+
+    const heading = line.match(/^(#{1,3})\s+(.+)$/);
+    if (heading){
+      closeList();
+      const level = heading[1].length;
+      output.push(`<h${level}>${renderInlineMarkdown(heading[2])}</h${level}>`);
+      return;
+    }
+
+    if (line.startsWith("- ")){
+      if (!listOpen){
+        output.push("<ul>");
+        listOpen = true;
+      }
+      output.push(`<li>${renderInlineMarkdown(line.slice(2))}</li>`);
+      return;
+    }
+
+    closeList();
+    output.push(`<p>${renderInlineMarkdown(line)}</p>`);
+  });
+
+  closeList();
+  return output.join("");
 }
 
 /* 주소 뒤에 ?debug=1 을 붙이면 화면 위에 상태가 뜬다.
@@ -426,6 +489,8 @@ let vawsReady   = [];   // VAWS 카드 안에 들어가는 사진들
 let viewList    = [];   // 크게 보기가 지금 넘기고 있는 목록
 let viewIdx     = 0;
 let noticeTrigger = null;
+let changelogTrigger = null;
+let changelogOwner = null;
 
 /* 사진 목록을 받아 눌러서 크게 볼 수 있는 격자를 만든다.
    · 파일이 없는 칸은 조용히 사라진다 (깨지지 않음)
@@ -610,6 +675,86 @@ function setupNoticeViewer(){
     const dx = t.clientX - sx, dy = t.clientY - sy;
     if (Math.abs(dx) > 60 && Math.abs(dx) > Math.abs(dy) * 1.5) noticeStep(dx < 0 ? 1 : -1);
   }, { passive:true });
+}
+
+function openChangelog(){
+  const view = document.getElementById("changelog-view");
+  const content = document.getElementById("changelog-content");
+  if (!view || !content) return;
+
+  if (content.dataset.rendered !== "1"){
+    content.innerHTML = renderChangelogMarkdown(CHANGELOG_SOURCE);
+    content.dataset.rendered = "1";
+  }
+
+  changelogTrigger = document.activeElement;
+  changelogOwner = isSongViewActive() ? songView : app;
+  changelogOwner.inert = true;
+  view.inert = false;
+  view.classList.add("open");
+  view.setAttribute("aria-hidden", "false");
+  document.body.classList.add("no-scroll");
+
+  const scroll = document.getElementById("changelog-scroll");
+  if (scroll) scroll.scrollTop = 0;
+  const close = document.getElementById("changelog-close");
+  if (close) close.focus();
+}
+
+function closeChangelog(){
+  const view = document.getElementById("changelog-view");
+  if (!view) return;
+  view.classList.remove("open");
+  view.setAttribute("aria-hidden", "true");
+  view.inert = true;
+  if (changelogOwner) changelogOwner.inert = false;
+  changelogOwner = null;
+  document.body.classList.remove("no-scroll");
+  if (changelogTrigger && changelogTrigger.isConnected) changelogTrigger.focus();
+  changelogTrigger = null;
+}
+
+function setupChangelogModal(){
+  const view = document.getElementById("changelog-view");
+  if (!view || view.dataset.wired) return;
+  view.dataset.wired = "1";
+
+  const close = document.getElementById("changelog-close");
+  const scroll = document.getElementById("changelog-scroll");
+  if (close) close.addEventListener("click", closeChangelog);
+  if (view) view.addEventListener("click", event=>{
+    if (event.target === view || event.target === scroll) closeChangelog();
+  });
+
+  document.addEventListener("click", event=>{
+    const trigger = event.target.closest && event.target.closest("[data-open-changelog]");
+    if (!trigger) return;
+    event.preventDefault();
+    openChangelog();
+  });
+
+  document.addEventListener("keydown", event=>{
+    if (!view.classList.contains("open")) return;
+    if (event.key === "Escape"){
+      event.preventDefault();
+      closeChangelog();
+      return;
+    }
+    if (event.key !== "Tab") return;
+
+    const focusable = [...view.querySelectorAll("button, a[href]")]
+      .filter(el => !el.disabled && el.offsetParent !== null);
+    const first = focusable[0];
+    const last = focusable[focusable.length - 1];
+    if (!first || !last) return;
+    if (event.shiftKey && document.activeElement === first){
+      event.preventDefault();
+      last.focus();
+    } else if (!event.shiftKey && document.activeElement === last){
+      event.preventDefault();
+      first.focus();
+    }
+  });
 }
 
 function setupSeatMap(){
@@ -4507,5 +4652,6 @@ function loadYouTubeApi(){
 const scheduleIdle = window.requestIdleCallback || ((callback)=>setTimeout(callback, 1200));
 scheduleIdle(loadYouTubeApi);
 setupDebugBadge();
+setupChangelogModal();
 
 router();
