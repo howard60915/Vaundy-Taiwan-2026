@@ -2,7 +2,7 @@
 
 本檔案依 Git 歷史整理，使用版本提交作為每一段的邊界。
 
-## [**v1.9.1**](https://github.com/watain666/Vaundy-Taiwan-2026/commit/RELEASE_COMMIT_SHA)
+## [**v1.9.1**](https://github.com/watain666/Vaundy-Taiwan-2026/commit/d6fe90143815f4534fbfa24e8832aee4a1741196)
 
 - 依 UtaTen 歌詞逐行校對並修正 34 首歌曲的日文 ruby 讀音與羅馬字，保留應援標記、斷行與上下文讀法。
 - 補齊〈心動〉、〈怪獣の花唄〉、〈恋風邪にのせて〉、〈踊り子〉、〈裸の勇者〉、〈不可幸力〉、〈再会〉、〈花占い〉、〈呼び声〉等歌曲的讀音資料。
