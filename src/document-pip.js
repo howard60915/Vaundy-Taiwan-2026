@@ -3,6 +3,7 @@ import { CLOSE_SVG, PAUSE_SVG, PLAY_SVG } from "./ui/icons.js";
 
 const PIP_WIDTH = 420;
 const PIP_HEIGHT = 240;
+const KARAOKE_DYNAMIC_CLASSES = new Set(["karaoke-lit", "karaoke-current"]);
 
 function isDocumentPipSupported(){
   try {
@@ -33,6 +34,37 @@ function copyStyles(sourceDocument, targetDocument){
 function copyIconSprite(sourceDocument, targetDocument){
   const sprite = sourceDocument.querySelector(".icon-sprite");
   if (sprite) targetDocument.body.appendChild(sprite.cloneNode(true));
+}
+
+function stableMarkup(markup){
+  return String(markup || "")
+    .replace(/\s+class="([^"]*)"/gu, (_match, value)=>{
+      const classes = value
+        .split(/\s+/u)
+        .filter(name => name && !KARAOKE_DYNAMIC_CLASSES.has(name));
+      return classes.length ? ` class="${classes.join(" ")}"` : "";
+    })
+    .replace(/\s+style="[^"]*"/gu, "");
+}
+
+function syncKaraokeState(target, markup){
+  if (!target || !markup) return true;
+
+  const template = target.ownerDocument.createElement("template");
+  template.innerHTML = markup;
+  const currentUnits = [...target.querySelectorAll(".karaoke-unit")];
+  const nextUnits = [...template.content.querySelectorAll(".karaoke-unit")];
+  if (currentUnits.length !== nextUnits.length) return false;
+
+  currentUnits.forEach((unit, index)=>{
+    const next = nextUnits[index];
+    unit.classList.toggle("karaoke-lit", next.classList.contains("karaoke-lit"));
+    unit.classList.toggle("karaoke-current", next.classList.contains("karaoke-current"));
+    const progress = next.style.getPropertyValue("--karaoke-word-progress");
+    if (progress) unit.style.setProperty("--karaoke-word-progress", progress);
+    else unit.style.removeProperty("--karaoke-word-progress");
+  });
+  return true;
 }
 
 function actionButton(documentRef, className, label, icon, handler){
@@ -135,8 +167,8 @@ export function createDocumentPip({
 
     const current = root.querySelector(".pip-current-line");
     if (current){
-      const key = `${currentMarkup}\u0000${currentEmptyMessage}`;
-      if (key !== currentMarkupKey){
+      const key = `${stableMarkup(currentMarkup)}\u0000${currentEmptyMessage}`;
+      if (key !== currentMarkupKey || !syncKaraokeState(current, currentMarkup)){
         replaceMarkup(current, currentMarkup, currentEmptyMessage);
         currentMarkupKey = key;
       }
@@ -146,9 +178,10 @@ export function createDocumentPip({
     const next = root.querySelector(".pip-next-line");
     if (nextGroup && next){
       nextGroup.hidden = !nextMarkup;
-      if (nextMarkup !== nextMarkupKey){
+      const key = stableMarkup(nextMarkup);
+      if (key !== nextMarkupKey || !syncKaraokeState(next, nextMarkup)){
         replaceMarkup(next, nextMarkup, "");
-        nextMarkupKey = nextMarkup;
+        nextMarkupKey = key;
       }
     }
 

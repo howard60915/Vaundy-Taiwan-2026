@@ -2,6 +2,11 @@
 
 本檔案依 Git 歷史整理，使用版本提交作為每一段的邊界。
 
+## [**v1.9.3**](https://github.com/watain666/Vaundy-Taiwan-2026/commit/403ac3c75d401511be8fa22d3666ddbb5b354c00)
+
+- 修正桌面 Document Picture-in-Picture 的逐字 Karaoke 與應援動作圖示在同步更新時反覆重建，避免動畫抽蓄、過快重播或卡住。
+- 保留字幕浮窗既有 DOM，只更新目前高亮與進度狀態，讓 PiP 的同步動畫更穩定。
+
 ## [**v1.9.2**](https://github.com/watain666/Vaundy-Taiwan-2026/commit/cb06ce871a16557f3cc10ed4b70eb2c4ad98fc4d)
 
 - 修正全 36 首歌曲、1419 行歌詞的卡拉 OK 同步，統一以日文逐字時間作為假名與羅馬字的共同基準。
