@@ -25,6 +25,9 @@ function copyRootStaticAssets(){
 export default defineConfig({
   base: "./",
   plugins: [copyRootStaticAssets()],
+  server: {
+    allowedHosts: ["vn7591g.tail12ac60.ts.net"]
+  },
   build: {
     outDir: "dist",
     emptyOutDir: true,

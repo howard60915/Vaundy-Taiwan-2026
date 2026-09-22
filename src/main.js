@@ -22,6 +22,7 @@ import {
   BACK_SVG,
   TRACK_PREV_SVG,
   TRACK_NEXT_SVG,
+  PIP_SVG,
   CLOSE_SVG,
   SUN_SVG,
   MOON_SVG,
@@ -53,6 +54,7 @@ import {
 } from "./chant-guide.js";
 import { loadFurigana, loadKaraokeSources } from "./services/lazy-modules.js";
 import { store } from "./services/storage.js";
+import { createDocumentPip } from "./document-pip.js";
 import CHANGELOG_SOURCE from "../CHANGELOG.md?raw";
 
 const appBaseUrl = import.meta.env?.BASE_URL || "./";
@@ -238,6 +240,12 @@ let currentTheme = storedTheme === "dark" ? "dark"
   : storedTheme === "light" ? "light"
   : themePreference.matches ? "dark" : "light";
 
+const documentPip = createDocumentPip({
+  onPlayPause: togglePlayback,
+  onFocusOpener: ()=>{ try { window.focus(); } catch(e){} },
+  onClosed: updateDocumentPipButton
+});
+
 function themeToggleHtml(extraClass = ""){
   return `<button class="theme-toggle ${extraClass}" type="button" data-theme-toggle></button>`;
 }
@@ -252,6 +260,7 @@ function applyTheme(theme, save = false){
     button.setAttribute("aria-label", `切換至${label}`);
     button.setAttribute("title", `切換至${label}`);
   });
+  updateDocumentPip();
 }
 document.addEventListener("click", event => {
   if (!event.target.closest("[data-theme-toggle]")) return;
@@ -2212,6 +2221,11 @@ function buildSongShell(){
             ${PLAYBACK_RATE_OPTIONS.map(rate => "<option value=\"" + rate + "\">" + formatPlaybackRate(rate) + "</option>").join("")}
           </select>
         </label>
+        <button class="venue-toggle pip-toggle" id="pip-btn" type="button" aria-pressed="false" aria-label="開啟或聚焦同步字幕小窗" title="開啟或聚焦同步字幕小窗"${documentPip.supported ? "" : " hidden"}>
+          ${PIP_SVG}
+          <span class="venue-label venue-label-desktop">PiP</span>
+          <span class="venue-label venue-label-mobile" aria-hidden="true">PiP</span>
+        </button>
         <button class="venue-toggle chant-toggle" id="chant-btn" aria-pressed="false" aria-label="開啟／關閉只聽大合唱">
           <span class="chant-ico">${STATIC_MIC_SVG}</span>
           <span class="venue-label">只聽大合唱</span>
@@ -2378,17 +2392,16 @@ function buildSongShell(){
   /* 단축모드 — 영상을 감추고 발음 가사만 크게.
      온라인이면 소리와 가사 동기화는 그대로 유지된다. */
   /* 재생 / 일시정지 — 단축모드에서 영상이 안 보일 때 소리를 멈추는 수단 */
-  document.getElementById("play-toggle").addEventListener("click", ()=>{
-    if (!player || !playerReady) return;
-    // 떼창을 마지막까지 들은 뒤라면 처음 구간부터 다시
-    if (chantOnly && chantDone){ jumpToChant(0); return; }
-    let st = -1;
-    try { st = player.getPlayerState(); } catch(e){}
-    try {
-      if (st === YT.PlayerState.PLAYING || st === YT.PlayerState.BUFFERING) player.pauseVideo();
-      else player.playVideo();
-    } catch(e){}
-  });
+  document.getElementById("play-toggle").addEventListener("click", togglePlayback);
+
+  const pipButton = document.getElementById("pip-btn");
+  if (pipButton && documentPip.supported){
+    pipButton.addEventListener("click", async ()=>{
+      const opened = await documentPip.open(buildDocumentPipViewModel());
+      if (opened) updateDocumentPipButton();
+    });
+    updateDocumentPipButton();
+  }
 
   document.getElementById("playback-rate").addEventListener("change", event=>{
     setPlaybackRate(Number(event.currentTarget.value));
@@ -2679,6 +2692,7 @@ function applySongTempo(song){
   page.style.setProperty("--icon-beat-duration", `${beatSeconds.toFixed(3)}s`);
   page.dataset.bpm = String(bpm);
   iconClockStartedAt = performance.now();
+  updateDocumentPip();
 }
 
 function renderSong(song){
@@ -2881,6 +2895,7 @@ function updateReadingUi(){
     btn.setAttribute("aria-pressed", readingMode !== "kana" ? "true" : "false");
     btn.setAttribute("aria-label", `切換日文讀音：目前顯示${label}`);
   }
+  updateDocumentPip();
 }
 
 function updateLyricDisplayUi(){
@@ -2902,6 +2917,7 @@ function updateLyricDisplayUi(){
     chineseBtn.setAttribute("aria-label", `切換繁中翻譯：目前${showChinese ? "顯示" : "隱藏"}`);
   }
   updateLyricsPadding();
+  updateDocumentPip();
 }
 
 function updateKaraokeUi(){
@@ -2965,6 +2981,7 @@ function leaveSongView(){
   hideTipPic();
   if (lyricObserver){ lyricObserver.disconnect(); lyricObserver = null; }
   releaseWakeLock();
+  documentPip.close();
   if (player && typeof player.pauseVideo === 'function') {
     try { player.pauseVideo(); } catch(e){}
   }
@@ -3492,6 +3509,96 @@ function getPlayerDuration(){
     }
   } catch(e){}
   return null;
+}
+
+function playerIsPlaying(){
+  try {
+    const state = player && typeof player.getPlayerState === "function"
+      ? player.getPlayerState()
+      : -1;
+    return state === 1 || state === 3; // PLAYING / BUFFERING
+  } catch(e){
+    return false;
+  }
+}
+
+function updateDocumentPipButton(){
+  const button = document.getElementById("pip-btn");
+  if (!button || !documentPip.supported) return;
+  const open = documentPip.isOpen();
+  button.classList.toggle("active", open);
+  button.setAttribute("aria-pressed", open ? "true" : "false");
+  button.setAttribute("aria-label", open ? "聚焦同步字幕小窗" : "開啟或聚焦同步字幕小窗");
+  button.setAttribute("title", open ? "聚焦同步字幕小窗" : "開啟或聚焦同步字幕小窗");
+}
+
+function togglePlayback(){
+  if (!player || !playerReady) return;
+  // 떼창을 마지막까지 들은 뒤라면 처음 구간부터 다시
+  if (chantOnly && chantDone){ jumpToChant(0); return; }
+  const state = (()=>{
+    try { return player.getPlayerState(); } catch(e){ return -1; }
+  })();
+  try {
+    if (state === YT.PlayerState.PLAYING || state === YT.PlayerState.BUFFERING) player.pauseVideo();
+    else player.playVideo();
+  } catch(e){}
+  updateDocumentPip();
+}
+
+function documentPipLineMarkup(line, active){
+  if (!line) return "";
+  const clone = line.cloneNode(true);
+  clone.classList.toggle("active", !!active);
+  clone.classList.add("in-view");
+  const output = document.createElement("div");
+  output.className = clone.className;
+  output.innerHTML = clone.innerHTML;
+  return output.outerHTML;
+}
+
+function nextDocumentPipLineIndex(song, index){
+  const lines = song && Array.isArray(song.lyrics) ? song.lyrics : [];
+  const start = Number.isInteger(index) ? index + 1 : 0;
+  for (let i = start; i < lines.length; i++){
+    if (hasDisplayedLyricText(lines[i])) return i;
+  }
+  return -1;
+}
+
+function buildDocumentPipViewModel(activeIdx = lastActiveIdx){
+  const page = document.getElementById("song-page");
+  const list = document.getElementById("lyrics-list");
+  const lines = list ? [...list.querySelectorAll(".lyric-line")] : [];
+  const currentIndex = Number.isInteger(activeIdx) ? activeIdx : -1;
+  const currentLine = currentIndex >= 0 ? lines[currentIndex] : null;
+  const nextIndex = nextDocumentPipLineIndex(currentSong, currentIndex);
+  const nextLine = nextIndex >= 0 ? lines[nextIndex] : null;
+  const beatDuration = page
+    ? getComputedStyle(page).getPropertyValue("--icon-beat-duration").trim()
+    : "";
+
+  return {
+    title: currentSong ? currentSong.title : "同步字幕",
+    currentMarkup: documentPipLineMarkup(currentLine, true),
+    nextMarkup: documentPipLineMarkup(nextLine, false),
+    isPlaying: playerIsPlaying(),
+    canPlayPause: Boolean(player && playerReady
+      && typeof player.playVideo === "function"
+      && typeof player.pauseVideo === "function"),
+    theme: currentTheme,
+    showJapanese,
+    showChinese,
+    readingMode,
+    karaokeEnabled,
+    iconBeatDuration: beatDuration,
+    status: playerReady ? "" : "正在等待影片播放器…"
+  };
+}
+
+function updateDocumentPip(activeIdx = lastActiveIdx){
+  if (!documentPip.isOpen()) return;
+  documentPip.update(buildDocumentPipViewModel(activeIdx));
 }
 
 function setKaraokeSourceStatus(state, text){
@@ -4205,6 +4312,7 @@ function onPlayerReady(){
     pendingVideoId = null;
     playVideoFor(id);
   } else pendingVideoId = null;
+  updateDocumentPip();
 }
 
 function onPlayerError(){
@@ -4291,6 +4399,7 @@ function updatePlayButton(){
 
 function onPlayerStateChange(event) {
   updatePlayButton();
+  updateDocumentPip();
   if (event.data === YT.PlayerState.PLAYING || event.data === YT.PlayerState.CUED) {
     // loadVideoById 會把 YouTube 速度重設為 x1，換歌後在影片可播放時恢復選擇。
     applyPlaybackRate();
@@ -4374,13 +4483,9 @@ function updateLyricsSync(force) {
   if (!list) return;
   const lines = list.querySelectorAll(".lyric-line");
 
-  let cur = null;
-  try {
-    if (player && typeof player.getCurrentTime === 'function'){
-      // 실제 재생 위치보다 조금 앞선 시점을 기준으로 판단해 가사를 먼저 넘김
-      cur = player.getCurrentTime() + LYRIC_LEAD_SEC;
-    }
-  } catch(e){ cur = null; syncErr = String(e && e.message || e); }
+  const playerTime = getPlayerTime();
+  // 실제 재생 위치보다 조금 앞선 시점을 기준으로 판단해 가사를 먼저 넘김
+  const cur = playerTime === null ? null : playerTime + LYRIC_LEAD_SEC;
 
   // 떼창만 듣기 — 구간을 벗어났으면 다음 떼창으로 옮긴다
   chantOnlyTick(cur);
@@ -4409,6 +4514,7 @@ function updateLyricsSync(force) {
   pruneActiveLines(target);
   if (target && !target.classList.contains("active")) target.classList.add("active");
   syncTicks++;
+  updateDocumentPip(activeIdx);
 
   if (cur === null) return;           // 재생 위치를 모르면 여기까지
 

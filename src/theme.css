@@ -306,6 +306,9 @@ button{touch-action:manipulation;}
 .song-page .venue-toggle,
 .song-page .play-toggle,
 .song-page .playback-rate-control{border:0;background:var(--stage-raised);}
+.song-page .pip-toggle[hidden]{display:none;}
+.song-page .pip-toggle svg{flex:none;width:16px;height:16px;}
+.song-page .pip-toggle.active{border-color:var(--ui-accent);color:var(--ui-accent);}
 .song-page .playback-rate-select{
   color:var(--gold-soft);
   color-scheme:dark;
