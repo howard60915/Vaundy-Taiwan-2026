@@ -139,10 +139,9 @@ export const JP_CHANT_GUIDES = {
     chantTimes: [54, 59, 64, 69.5, 97.5, 102.5, 108, 113, 176.5, 181.5, 187, 192],
     chantSegments: [
       { time: 41.5,  text: "あれ、なに", romaji: "are, nani" },
-      { time: 41.5,  text: "それ、なに", romaji: "sore, nani" },
+      { time: 46.5,  text: "それ、なに", romaji: "sore, nani" },
       { time: 85,    text: "あれ、なに", romaji: "are, nani" },
       { time: 85,    text: "それ、なに", romaji: "sore, nani" },
-      { time: 121.5, text: "愛で",       romaji: "ai de" },
       { time: 154.5, text: "愛で",       romaji: "ai de" }
     ]
   },
