@@ -19,7 +19,7 @@
 
 ## [**v1.8.15**](https://github.com/watain666/Vaundy-Taiwan-2026/commit/8df2f425ce121d2edaffb4d08d7541ef790423ed) - [**v1.8.19**](https://github.com/watain666/Vaundy-Taiwan-2026/commit/60f21277ea694244c43745b57d7949e6b6dc26af)
 
-- 支援手機橫向分割畫面，並讓場館模式的歌詞在橫向版面使用完整寬度。
+- 支援手機橫向分割畫面，並讓歌曲頁的「簡潔模式」（隱藏影片畫面、保留聲音與歌詞）在橫向版面使用完整寬度。
 - 修正同步歌詞提示文字的對齊，完成羅馬字對照與歌詞映射稽核。
 - 新增 LRCLIB `lyricsfile`／同步 LRC 的逐行時間來源；卡拉 OK 會在既有逐字來源與 AMLL TTML DB 無結果時繼續 fallback。
 - 依來源實際提供逐字或逐行時間顯示狀態，並改善來源名稱、對齊行數、影片偏移與本機快取的提示。
@@ -53,7 +53,7 @@
 - 使用上一首／下一首的曲目圖示改善歌曲導覽。
 - 在頁尾加入中文歌詞翻譯來源與作者連結，並調整手機版翻譯署名、頁尾連結與簡潔模式播放控制的排版。
 
-## [**起始提交 cccc899**](https://github.com/watain666/Vaundy-Taiwan-2026/commit/cccc89922ebdbb10afe57cd16e843cf1e3e0d2a8) - [**v1.6.0**](https://github.com/watain666/Vaundy-Taiwan-2026/commit/9ff8bd36561f08e8564053ef1b3965073c6f33f7)
+## [**cccc899**](https://github.com/watain666/Vaundy-Taiwan-2026/commit/cccc89922ebdbb10afe57cd16e843cf1e3e0d2a8) - [**v1.6.0**](https://github.com/watain666/Vaundy-Taiwan-2026/commit/9ff8bd36561f08e8564053ef1b3965073c6f33f7)
 
 - 將介面、PWA metadata、公告與演出資訊轉為繁體中文，並將指南從首爾場調整為台北場。
 - 加入台北場座位圖，將東京／首爾歌單明確標示為非官方參考。
