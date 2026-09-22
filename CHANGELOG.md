@@ -2,6 +2,12 @@
 
 本檔案依 Git 歷史整理，使用版本提交作為每一段的邊界。
 
+## [**v1.8.29**](https://github.com/watain666/Vaundy-Taiwan-2026/commit/8b2449c)
+
+- 修正〈Fukakouryoku〉、〈KoikazeniNosete〉等歌曲的過長歌詞分段，補齊對應的假名、羅馬字與應援區段。
+- 移除舊韓文歌詞提示，將合唱與拍手等應援 `tag` 統一交由日文歌詞分段承載，並補齊原本缺少 `jp` 的提示行。
+- 更新應援判斷、歌曲標記與歌詞讀音邏輯，避免再依賴已移除的 `ko` 歌詞資料。
+
 ## [**v1.8.25**](https://github.com/watain666/Vaundy-Taiwan-2026/commit/84025c84a1c31f6eff44c3151f41772ef37f2c6f) - [**v1.8.28**](https://github.com/watain666/Vaundy-Taiwan-2026/commit/dcba472ce471bbe82d64c0b5077f6cb5917ff057)
 
 - 調整手機版歌曲工具列的倍速與讀音控制寬度、字級和間距，讓控制項在小螢幕上更容易操作。
