@@ -52,6 +52,7 @@ export function homeHtml(build, themeToggle = `<button class="theme-toggle home-
           <span class="info-toggle-chevron">${CHEVRON_SVG}</span>
         </button>
         <div class="info-panel" id="info-panel" inert aria-hidden="true">
+          <template class="info-panel-template">
           <div class="info-panel-inner">
             <div class="info-panel-title"><span class="bar">|</span> 演出概要 <span class="bar">|</span></div>
             <dl class="info-facts">
@@ -157,6 +158,7 @@ export function homeHtml(build, themeToggle = `<button class="theme-toggle home-
 
 
           </div>
+          </template>
         </div>
       </div>
 
@@ -167,6 +169,7 @@ export function homeHtml(build, themeToggle = `<button class="theme-toggle home-
           <span class="info-toggle-chevron">${CHEVRON_SVG}</span>
         </button>
         <div class="info-panel" inert aria-hidden="true">
+          <template class="info-panel-template">
           <div class="info-panel-inner">
             <p class="way-note">台北場的場館地圖、MD、身分確認等<b>官方公告</b>會在公布後補上。</p>
             <div class="notice-grid" id="notice-grid"></div>
@@ -175,6 +178,7 @@ export function homeHtml(build, themeToggle = `<button class="theme-toggle home-
             </p>
             <p class="info-footnote">※ 台北場官方公告圖片公布後再更新。</p>
           </div>
+          </template>
         </div>
       </div>
 
@@ -185,6 +189,7 @@ export function homeHtml(build, themeToggle = `<button class="theme-toggle home-
           <span class="info-toggle-chevron">${CHEVRON_SVG}</span>
         </button>
         <div class="info-panel" inert aria-hidden="true">
+          <template class="info-panel-template">
           <div class="info-panel-inner">
             <div class="info-panel-title"><span class="bar">|</span> 台北小巨蛋 Taipei Arena <span class="bar">|</span></div>
 
@@ -210,6 +215,7 @@ export function homeHtml(build, themeToggle = `<button class="theme-toggle home-
 
             <p class="info-footnote">※ 若主辦單位後續更新舞台、票區或票價，請以最新官方公告為準。</p>
           </div>
+          </template>
         </div>
       </div>
 
@@ -220,6 +226,7 @@ export function homeHtml(build, themeToggle = `<button class="theme-toggle home-
           <span class="info-toggle-chevron">${CHEVRON_SVG}</span>
         </button>
         <div class="info-panel" inert aria-hidden="true">
+          <template class="info-panel-template">
           <div class="info-panel-inner">
             <div class="way-addr">
               <b>台北小巨蛋 Taipei Arena</b>
@@ -265,6 +272,7 @@ export function homeHtml(build, themeToggle = `<button class="theme-toggle home-
 
             <p class="info-footnote">※ 地圖 App 需要網路連線。<br>※ 出口、交通管制、停車與臨時接駁若有變更，均以台北小巨蛋、台北捷運及主辦官方公告為準。</p>
           </div>
+          </template>
         </div>
       </div>
 
@@ -275,6 +283,7 @@ export function homeHtml(build, themeToggle = `<button class="theme-toggle home-
           <span class="info-toggle-chevron">${CHEVRON_SVG}</span>
         </button>
         <div class="info-panel" inert aria-hidden="true">
+          <template class="info-panel-template">
           <div class="info-panel-inner">
 
             <p class="way-note">不知道應援口號也沒關係。<b>應援不是義務。</b>這份指南整理的是「知道後會更有趣的事」，不是必須背熟的作業。安靜站著欣賞也很棒。</p>
@@ -318,6 +327,7 @@ export function homeHtml(build, themeToggle = `<button class="theme-toggle home-
 
             <p class="info-footnote">※ 本指南由粉絲製作。拍攝、攜入、再次入場等官方規定，以 Ticket Plus、台北小巨蛋公告與<b>演出當天現場指示</b>為準。</p>
           </div>
+          </template>
         </div>
       </div>
 
@@ -328,6 +338,7 @@ export function homeHtml(build, themeToggle = `<button class="theme-toggle home-
           <span class="info-toggle-chevron">${CHEVRON_SVG}</span>
         </button>
         <div class="info-panel" inert aria-hidden="true">
+          <template class="info-panel-template">
           <div class="info-panel-inner">
             <div class="info-panel-title"><span class="bar">|</span> 場館限定特典 <span class="bar">|</span></div>
 
@@ -365,6 +376,7 @@ export function homeHtml(build, themeToggle = `<button class="theme-toggle home-
 
             <p class="info-footnote">※ 以上內容以 VAWS MEMBERS 官方公告為準，詳細安排可能依演出當天現場狀況調整。</p>
           </div>
+          </template>
         </div>
       </div>
 

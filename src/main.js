@@ -950,6 +950,8 @@ function setupOneAccordion(card){
       });
     } else {
       freezeHeroSpacing(card);
+      const template = panel.querySelector(":scope > .info-panel-template");
+      if (template) panel.replaceChild(template.content.cloneNode(true), template);
       panel.inert = false;
       panel.setAttribute("aria-hidden", "false");
       card.classList.add("open");
@@ -960,6 +962,7 @@ function setupOneAccordion(card){
       });
       if (card.id === "notice-card") setupNotices();
       if (card.id === "vaws-card") setupVawsPics();
+      if (card.id === "way-card") setupAddressCopy();
       panel.style.maxHeight = panel.scrollHeight + "px";
       // 이후 내부 콘텐츠 크기 변화(폰트 로딩 등)에도 대응해 살짝 여유를 둠
       // (스크롤은 건드리지 않음 — 화면은 사용자가 직접 내리도록 둠)
@@ -1496,18 +1499,7 @@ function updateTodayCard(now){
 
 /* ── 준비물 체크 · 주소 복사 · 공유 · 오프라인 상태 ───────────── */
 function setupHomeExtras(){
-  // 주소 복사
-  const copyBtn = document.getElementById("copy-addr");
-  if (copyBtn){
-    copyBtn.addEventListener("click", async ()=>{
-      const addr = "105037 臺北市松山區南京東路4段2號 台北小巨蛋 Taipei Arena";
-      try { await navigator.clipboard.writeText(addr); copyBtn.textContent = "已複製 ✓"; }
-      catch(e){ copyBtn.textContent = addr; }
-      setTimeout(()=>{ copyBtn.textContent = "複製地址"; }, 1600);
-    });
-  }
-
-  // 공유하기 — 공유 시트가 없으면 링크 복사로 대체
+  // 分享按鈕位於首頁常駐內容，直接在初始化時接線。
   const shareBtn = document.getElementById("share-btn");
   if (shareBtn){
     shareBtn.addEventListener("click", async ()=>{
@@ -1524,6 +1516,19 @@ function setupHomeExtras(){
     });
   }
 
+}
+
+function setupAddressCopy(){
+  // 交通卡片內容在第一次展開時才建立。
+  const copyBtn = document.getElementById("copy-addr");
+  if (!copyBtn || copyBtn.dataset.wired === "1") return;
+  copyBtn.dataset.wired = "1";
+  copyBtn.addEventListener("click", async ()=>{
+    const addr = "105037 臺北市松山區南京東路4段2號 台北小巨蛋 Taipei Arena";
+    try { await navigator.clipboard.writeText(addr); copyBtn.textContent = "已複製 ✓"; }
+    catch(e){ copyBtn.textContent = addr; }
+    setTimeout(()=>{ copyBtn.textContent = "複製地址"; }, 1600);
+  });
 }
 
 
