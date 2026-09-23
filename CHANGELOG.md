@@ -2,7 +2,7 @@
 
 本檔案依 Git 歷史整理，使用版本提交作為每一段的邊界。
 
-## **v1.10.4**
+## [**v1.10.4**](https://github.com/watain666/Vaundy-Taiwan-2026/commit/a78f877697e9430e30515728e335206ca51a38ad)
 
 - [PR #7](https://github.com/watain666/Vaundy-Taiwan-2026/pull/7)：保留近期首頁可能仍被 CDN 快取引用的舊版入口 JavaScript 與更新日誌分檔，避免部署切換期間產生 404、造成首頁無法啟動。
 - 感謝 [@watain666](https://github.com/watain666) 提供 [PR #7](https://github.com/watain666/Vaundy-Taiwan-2026/pull/7)，修正 CDN 快取與版本資產切換的相容性。
