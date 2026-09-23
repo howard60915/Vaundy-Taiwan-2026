@@ -2,6 +2,10 @@
 
 本檔案依 Git 歷史整理，使用版本提交作為每一段的邊界。
 
+## [**v1.10.1**](https://github.com/watain666/Vaundy-Taiwan-2026/commit/bff0cd744d5f2f1af4cf36b64fef026c623e5295)
+
+- [commit bff0cd7](https://github.com/watain666/Vaundy-Taiwan-2026/commit/bff0cd744d5f2f1af4cf36b64fef026c623e5295)：將首頁 CSS 從 HTML 內嵌樣式改為獨立雜湊資產，縮小首頁文件並讓樣式與 HTML 平行載入；Service Worker 也納入該資產的離線預快取。
+
 ## [**v1.10.0**](https://github.com/watain666/Vaundy-Taiwan-2026/commit/12e3b27496f5f8bb47a16648fbfba973d502f2bd)
 
 - [commit 602ef37](https://github.com/watain666/Vaundy-Taiwan-2026/commit/602ef37a8fb6a1a62981879c877b117da569595d)：改版首頁資訊區與頁尾，將首頁改為建置時預先輸出並內嵌壓縮 CSS；海報轉為 WebP、座位圖延後至展開卡片後載入，並補齊 Service Worker 對分檔資源的離線預快取。
