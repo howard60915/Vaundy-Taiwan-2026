@@ -2,7 +2,7 @@
 
 本檔案依 Git 歷史整理，使用版本提交作為每一段的邊界。
 
-## **v1.10.2**
+## [**v1.10.2**](https://github.com/watain666/Vaundy-Taiwan-2026/commit/d2370e09f2bd699d83322b62f2f85df41f070f8a)
 
 - [PR #5](https://github.com/watain666/Vaundy-Taiwan-2026/pull/5)：建置時僅內嵌首頁首次繪製所需的樣式，讓完整樣式表在背景下載，並於首次操作時套用，改善手機版首次載入效能。
 - [PR #5](https://github.com/watain666/Vaundy-Taiwan-2026/pull/5)：直接開啟指南、劇透歌單或歌曲時，待完整樣式就緒後再顯示；將首頁海報納入 Service Worker 離線預快取。
