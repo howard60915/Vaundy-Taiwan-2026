@@ -27,14 +27,7 @@ function copyRootStaticAssets(){
       cpSync(resolve("images"), resolve(outputDir, "images"), { recursive: true });
 
       const indexPath = resolve(outputDir, "index.html");
-      // Inline the complete, minified stylesheet: no disabled styles, no
-      // duplicate critical rules, and no CSS request before the first paint.
-      let indexHtml = readFileSync(indexPath, "utf8");
-      indexHtml = indexHtml.replace(/<link rel="stylesheet" crossorigin href="(\.\/assets\/[^\"]+\.css)">/g, (_, url) => {
-        const css = readFileSync(resolve(outputDir, url), "utf8")
-          .replace(/url\(\.\//g, "url(./assets/");
-        return `<style data-app-styles>${css}</style>`;
-      });
+      const indexHtml = readFileSync(indexPath, "utf8");
       writeFileSync(indexPath, indexHtml);
       const assetUrls = [...new Set([
         ...[...indexHtml.matchAll(/(?:src|href)="(\.\/assets\/[^\"]+)"/g)].map(([, url]) => url),
