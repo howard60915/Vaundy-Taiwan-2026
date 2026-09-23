@@ -2,7 +2,7 @@
 
 本檔案依 Git 歷史整理，使用版本提交作為每一段的邊界。
 
-## **v1.10.5**
+## [**v1.10.5**](https://github.com/watain666/Vaundy-Taiwan-2026/commit/ac3abf9e99df2390fe53fe82fee7428a6d342315)
 
 - [PR #8](https://github.com/watain666/Vaundy-Taiwan-2026/pull/8)：修正日文合唱片段在羅馬拼音模式中未標成橘色；校正〈CHAINSAW BLOOD〉的 engine 音句不揮手、後續 `Hu-Hu-Hu-Hu` 段落揮手標記。
 - 感謝 [@watain666](https://github.com/watain666) 提供 [PR #8](https://github.com/watain666/Vaundy-Taiwan-2026/pull/8)，補齊合唱標色與揮手標記。
