@@ -2,27 +2,28 @@
 
 本檔案依 Git 歷史整理，使用版本提交作為每一段的邊界。
 
+## **v1.10.8**
+
+- 更新頁尾版面：手機版文案分成兩行並移除中間分隔號；桌面版維持同一行與 `・`，並縮小頁尾連結內距，讓手機版 Footer 更緊湊。
+- 修正測試環境的 Service Worker 處理，避免 Vite 開發頁面持續使用舊版快取；同步更新正式資源版本與入口 cache-buster，讓部署後能取得新畫面。
+
 ## [**v1.10.5**](https://github.com/watain666/Vaundy-Taiwan-2026/commit/ac3abf9e99df2390fe53fe82fee7428a6d342315)
 
 - [PR #8](https://github.com/watain666/Vaundy-Taiwan-2026/pull/8)：修正日文合唱片段在羅馬拼音模式中未標成橘色；校正〈CHAINSAW BLOOD〉的 engine 音句不揮手、後續 `Hu-Hu-Hu-Hu` 段落揮手標記。
-- 感謝 [@watain666](https://github.com/watain666) 提供 [PR #8](https://github.com/watain666/Vaundy-Taiwan-2026/pull/8)，補齊合唱標色與揮手標記。
 
 ## [**v1.10.4**](https://github.com/watain666/Vaundy-Taiwan-2026/commit/a78f877697e9430e30515728e335206ca51a38ad)
 
 - [PR #7](https://github.com/watain666/Vaundy-Taiwan-2026/pull/7)：保留近期首頁可能仍被 CDN 快取引用的舊版入口 JavaScript 與更新日誌分檔，避免部署切換期間產生 404、造成首頁無法啟動。
-- 感謝 [@watain666](https://github.com/watain666) 提供 [PR #7](https://github.com/watain666/Vaundy-Taiwan-2026/pull/7)，修正 CDN 快取與版本資產切換的相容性。
 
 ## [**v1.10.3**](https://github.com/watain666/Vaundy-Taiwan-2026/commit/13efb9ed62d550a68db60c747e49f893a8f2e833)
 
 - [PR #6](https://github.com/watain666/Vaundy-Taiwan-2026/pull/6)：恢復首頁完整樣式表與 HTML 平行載入，撤回前版延後套用樣式的處理，回應正式站首次載入效能分數下降。
 - [PR #6](https://github.com/watain666/Vaundy-Taiwan-2026/pull/6)：保留首頁海報的 Service Worker 離線預快取，讓恢復獨立樣式表後仍可離線顯示背景。
-- 感謝 [@watain666](https://github.com/watain666) 提供 [PR #6](https://github.com/watain666/Vaundy-Taiwan-2026/pull/6)，協助修正正式站的樣式載入方式。
 
 ## [**v1.10.2**](https://github.com/watain666/Vaundy-Taiwan-2026/commit/d2370e09f2bd699d83322b62f2f85df41f070f8a)
 
 - [PR #5](https://github.com/watain666/Vaundy-Taiwan-2026/pull/5)：建置時僅內嵌首頁首次繪製所需的樣式，讓完整樣式表在背景下載，並於首次操作時套用，改善手機版首次載入效能。
 - [PR #5](https://github.com/watain666/Vaundy-Taiwan-2026/pull/5)：直接開啟指南、劇透歌單或歌曲時，待完整樣式就緒後再顯示；將首頁海報納入 Service Worker 離線預快取。
-- 感謝 [@watain666](https://github.com/watain666) 提供 [PR #5](https://github.com/watain666/Vaundy-Taiwan-2026/pull/5)，改善首頁載入體驗。
 
 ## [**v1.10.1**](https://github.com/watain666/Vaundy-Taiwan-2026/commit/fdbc0eca3e2442c39c6450e36048c803f3241dac)
 

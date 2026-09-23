@@ -99,7 +99,7 @@ const SYNC_INTERVAL_MS   = 100;
 /* 지금 폰에 깔려 있는 화면이 몇 번째 판인지 알려 주는 표시.
    새로 올렸는데 화면이 그대로일 때, 옛 판이 남아 있는지 바로 확인할 수 있다.
    sw.js 의 CACHE_VERSION 과 같이 올려 주세요. */
-const BUILD = "v1.10.5";
+const BUILD = "v1.10.8";
 
 const TRANSLATION_CREDIT_URL = "https://home.gamer.com.tw/profile/index.php?owner=tsukilsao319";
 const CC_BY_NC_SA_URL = "https://creativecommons.org/licenses/by-nc-sa/4.0/";
@@ -4592,36 +4592,64 @@ function showInstallHint(html, btnLabel, onClick){
   showBanner(html, btnLabel, onClick, "install", dismissInstallHint);
 }
 
-/* 1) 서비스워커 등록 — 오프라인에서도 가사가 열리게.
-   The first install is deliberately outside the initial-view critical path. */
-if ("serviceWorker" in navigator && location.protocol.startsWith("http")) {
-  window.addEventListener("load", ()=>{
-    window.setTimeout(()=>{
-      const hadController = Boolean(navigator.serviceWorker.controller);
-      navigator.serviceWorker.register(`./sw.js?build=${BUILD}`).then((reg)=>{
-        reg.addEventListener("updatefound", ()=>{
-          const sw = reg.installing;
-          if (!sw) return;
-          sw.addEventListener("statechange", ()=>{
-            // 이미 쓰고 있는 상태에서 새 버전이 준비된 경우에만 안내
-            if (sw.state === "installed" && navigator.serviceWorker.controller){
-              showBanner("<b>新版本</b>已準備完成，歌詞或介面可能已更新。",
-                         "重新整理",
-                         ()=>{ sw.postMessage({ type:"SKIP_WAITING" }); });
-            }
-          });
-        });
-      }).catch(()=>{});
-
-      let reloading = false;
-      navigator.serviceWorker.addEventListener("controllerchange", ()=>{
-        // 首次安裝只讓 Service Worker 接管，避免首次訪問多一次 reload。
-        if (!hadController || reloading) return;
-        reloading = true;
-        location.reload();
-      });
-    }, 8000);
+/* 1) Service Worker — production 才需要離線快取。
+   Vite dev server 使用穩定的 /src/ URL；若讓 SW 接管，會把 HMR 的 JS/CSS
+   變成 cache-first，導致測試站一直顯示舊畫面。 */
+async function clearDevServiceWorker(){
+  const hadController = Boolean(navigator.serviceWorker.controller);
+  const registrations = await navigator.serviceWorker.getRegistrations();
+  const ownRegistrations = registrations.filter((registration)=>{
+    try { return new URL(registration.scope).origin === location.origin; }
+    catch { return false; }
   });
+  const removed = await Promise.all(ownRegistrations.map(registration => registration.unregister()));
+
+  if ("caches" in window){
+    const keys = await caches.keys();
+    await Promise.all(
+      keys.filter(key => key.startsWith("horo-guide-"))
+          .map(key => caches.delete(key))
+    );
+  }
+
+  // 舊版 SW 仍可能控制目前頁面；解除後重載一次，讓測試站回到純 Vite HMR。
+  if (hadController && removed.some(Boolean)) location.reload();
+}
+
+if ("serviceWorker" in navigator && location.protocol.startsWith("http")) {
+  if (import.meta.env.DEV){
+    window.addEventListener("load", ()=>{
+      clearDevServiceWorker().catch(()=>{});
+    }, { once:true });
+  } else {
+    window.addEventListener("load", ()=>{
+      window.setTimeout(()=>{
+        const hadController = Boolean(navigator.serviceWorker.controller);
+        navigator.serviceWorker.register(`./sw.js?build=${BUILD}`).then((reg)=>{
+          reg.addEventListener("updatefound", ()=>{
+            const sw = reg.installing;
+            if (!sw) return;
+            sw.addEventListener("statechange", ()=>{
+              // 이미 쓰고 있는 상태에서 새 버전이 준비된 경우에만 안내
+              if (sw.state === "installed" && navigator.serviceWorker.controller){
+                showBanner("<b>新版本</b>已準備完成，歌詞或介面可能已更新。",
+                           "重新整理",
+                           ()=>{ sw.postMessage({ type:"SKIP_WAITING" }); });
+              }
+            });
+          });
+        }).catch(()=>{});
+
+        let reloading = false;
+        navigator.serviceWorker.addEventListener("controllerchange", ()=>{
+          // 首次安裝只讓 Service Worker 接管，避免首次訪問多一次 reload。
+          if (!hadController || reloading) return;
+          reloading = true;
+          location.reload();
+        });
+      }, 8000);
+    }, { once:true });
+  }
 }
 
 /* 2) 오프라인이 되면 알려 주기 — 가사는 되지만 영상은 안 된다는 안내 */
