@@ -2,7 +2,7 @@
 
 本檔案依 Git 歷史整理，使用版本提交作為每一段的邊界。
 
-## [**v1.10.1**](https://github.com/watain666/Vaundy-Taiwan-2026/commit/bff0cd744d5f2f1af4cf36b64fef026c623e5295)
+## [**v1.10.1**](https://github.com/watain666/Vaundy-Taiwan-2026/commit/fdbc0eca3e2442c39c6450e36048c803f3241dac)
 
 - [commit bff0cd7](https://github.com/watain666/Vaundy-Taiwan-2026/commit/bff0cd744d5f2f1af4cf36b64fef026c623e5295)：將首頁 CSS 從 HTML 內嵌樣式改為獨立雜湊資產，縮小首頁文件並讓樣式與 HTML 平行載入；Service Worker 也納入該資產的離線預快取。
 
