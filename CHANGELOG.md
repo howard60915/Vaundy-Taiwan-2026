@@ -2,7 +2,7 @@
 
 本檔案依 Git 歷史整理，使用版本提交作為每一段的邊界。
 
-## **v1.10.0**
+## [**v1.10.0**](https://github.com/watain666/Vaundy-Taiwan-2026/commit/12e3b27496f5f8bb47a16648fbfba973d502f2bd)
 
 - [commit 602ef37](https://github.com/watain666/Vaundy-Taiwan-2026/commit/602ef37a8fb6a1a62981879c877b117da569595d)：改版首頁資訊區與頁尾，將首頁改為建置時預先輸出並內嵌壓縮 CSS；海報轉為 WebP、座位圖延後至展開卡片後載入，並補齊 Service Worker 對分檔資源的離線預快取。
 - [commit 772be72](https://github.com/watain666/Vaundy-Taiwan-2026/commit/772be726aec60ee59da36ed91dccb5bed44a52f5)：收合中的首頁資訊卡改為首次展開時才建立內容，並延後交通卡片的地址複製事件綁定，減少首頁初始 DOM 與初始化工作。
