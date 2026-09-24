@@ -2,6 +2,13 @@
 
 本檔案依 Git 歷史整理，使用版本提交作為每一段的邊界。
 
+## **v1.11.0**
+
+- [PR #9](https://github.com/watain666/Vaundy-Taiwan-2026/pull/9)：在歌曲播放器頂端加入播放進度條，並於選歌清單的歌名之前加上帶句點的編號，保留原歌名文字。
+- [PR #9](https://github.com/watain666/Vaundy-Taiwan-2026/pull/9)：改版 Document PiP 浮窗，加入播放進度、返回主頁與上一首／下一首控制；歌名改為不可點擊的純文字，避免誤觸主介面的歌曲選擇。
+- [PR #9](https://github.com/watain666/Vaundy-Taiwan-2026/pull/9)：歌詞隱藏時於主介面與 PiP 顯示提示，並讓主介面目前歌詞行的黃色左框與 PiP 一致。
+- [PR #9](https://github.com/watain666/Vaundy-Taiwan-2026/pull/9)：校正多首歌曲的繁中翻譯、長句分行與讀音，調整同步時間，並在歌詞載入失敗時顯示提示。
+
 ## [**v1.10.8**](https://github.com/watain666/Vaundy-Taiwan-2026/commit/f33459be1eed545241fabe311271581ad97384af)
 
 - 更新頁尾版面：手機版文案分成兩行並移除中間分隔號；桌面版維持同一行與 `・`，並縮小頁尾連結內距，讓手機版 Footer 更緊湊。
