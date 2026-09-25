@@ -4447,6 +4447,10 @@ function updateAudioSourceUi(){
     const value = document.getElementById("audio-source-value");
     if (value) value.textContent = label;
   }
+  const note = document.querySelector("#song-page .lyrics-note-copy");
+  if (note) note.textContent = audioSource === "spotify"
+    ? "點選歌詞跳至該段落，歌詞隨 Spotify 同步。"
+    : "點選歌詞跳至影片位置，歌詞隨影片同步。";
   updateWatchLink();
   updateSpotifyPanel(audioSource === "spotify"
     ? (!hasSpotifySession() ? "login" : playerReady ? "playing" : "connecting")
