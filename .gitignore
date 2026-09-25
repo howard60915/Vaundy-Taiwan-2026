@@ -4,3 +4,6 @@ dist/
 
 # Spectra app data
 .spectra/
+
+# 本機環境變數（例如 Spotify Client ID）
+*.local

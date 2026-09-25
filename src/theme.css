@@ -1069,3 +1069,52 @@ button{touch-action:manipulation;}
     border-left:0;
   }
 }
+
+/* Spotify 音源 — 取代影片畫面，顯示目前曲目或登入入口 */
+.song-page.audio-spotify #yt-player{visibility:hidden;}
+.song-page .spotify-panel{
+  position:absolute;
+  inset:0;
+  z-index:1;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  gap:var(--space-4);
+  padding:20px;
+  background:#000;
+  color:var(--cream);
+}
+.song-page .spotify-panel[hidden]{display:none;}
+.song-page .spotify-cover{
+  flex:none;
+  width:min(40%, 180px);
+  aspect-ratio:1;
+  border-radius:8px;
+  object-fit:cover;
+}
+.song-page .spotify-cover[hidden]{display:none;}
+.song-page .spotify-meta{
+  display:flex;
+  flex-direction:column;
+  align-items:flex-start;
+  gap:var(--space-2);
+  min-width:0;
+}
+.song-page .spotify-title{font-size:16px;line-height:1.4;overflow-wrap:anywhere;}
+.song-page .spotify-note{color:var(--stage-muted);font-size:13px;line-height:1.5;}
+.song-page .spotify-login{
+  min-height:var(--control-height);
+  padding:0 var(--space-4);
+  border:0;
+  border-radius:var(--radius-pill);
+  background:var(--cream);
+  color:#111;
+  font:inherit;
+  font-size:14px;
+  cursor:pointer;
+}
+.song-page .spotify-login:hover{filter:brightness(.92);}
+.song-page .spotify-login:focus-visible{outline:2px solid var(--cream);outline-offset:2px;}
+.song-page .spotify-login[hidden]{display:none;}
+.song-page .audio-source-toggle[hidden]{display:none;}
+.song-page .audio-source-toggle.active .reading-value{color:var(--gold);}

@@ -50,6 +50,14 @@ import { loadFurigana, loadKaraokeSources, loadSongLyrics } from "./services/laz
 import { loadJapaneseFontSubset } from "./services/japanese-font.js";
 import { store } from "./services/storage.js";
 import { createDocumentPip } from "./document-pip.js";
+import { SPOTIFY_TRACKS } from "./spotify-tracks.js";
+import {
+  beginSpotifyLogin,
+  completeSpotifyLogin,
+  createSpotifyPlayer,
+  hasSpotifySession,
+  spotifyConfigured
+} from "./services/spotify.js";
 
 const appBaseUrl = import.meta.env?.BASE_URL || "./";
 
@@ -58,6 +66,16 @@ const songView = document.getElementById("song-view");
 let canReuseHome = true;
 let countdownTimer = null;
 let player = null;
+/* 音源：YouTube（預設）或 Spotify Premium。player 永遠指向目前使用中的
+   播放器；Spotify 播放器模仿 YouTube 的方法並換算成影片時間軸，
+   因此歌詞同步、只聽大合唱與 PiP 不需要分辨音源。 */
+const PLAYER_STATE = Object.freeze({ ENDED: 0, PLAYING: 1, PAUSED: 2, BUFFERING: 3, CUED: 5 });
+const AUDIO_SOURCE_STORAGE_KEY = "horo-audio-source";
+let audioSource = spotifyConfigured() && store(AUDIO_SOURCE_STORAGE_KEY) === "spotify" ? "spotify" : "youtube";
+let youtubePlayer = null;
+let youtubeReady = false;
+let spotifyPlayer = null;
+let spotifyTrackInfo = null;
 let syncTimer = null;
 let autoScrollEnabled = true;
 let venueMode = false;          // 단축모드 (첫 실행 때 저장값을 읽어 옴)
@@ -1928,6 +1946,14 @@ function buildSongShell(){
           <div class="video-wrap">
             <div class="video-frame">
               <div id="yt-player"></div>
+              <section class="spotify-panel" id="spotify-panel" aria-label="Spotify 音源" hidden>
+                <img class="spotify-cover" id="spotify-cover" alt="" hidden>
+                <span class="spotify-meta">
+                  <strong class="spotify-title" id="spotify-title">Spotify</strong>
+                  <span class="spotify-note" id="spotify-note" role="status" aria-live="polite"></span>
+                  <button type="button" class="spotify-login" id="spotify-login" hidden>登入 Spotify</button>
+                </span>
+              </section>
               <details class="karaoke-source-popover" id="karaoke-source-popover">
                 <summary aria-label="查看同步資訊與中譯歌詞作者" title="同步資訊與中譯歌詞作者">${INFO_SVG}</summary>
                 <span class="karaoke-source-status" id="karaoke-source-status" role="status" aria-live="polite">
@@ -1995,6 +2021,10 @@ function buildSongShell(){
             ${PLAYBACK_RATE_OPTIONS.map(rate => "<option value=\"" + rate + "\">" + formatPlaybackRate(rate) + "</option>").join("")}
           </select>
         </label>
+        <button class="venue-toggle audio-source-toggle" id="audio-source-btn" type="button" aria-pressed="false" aria-label="切換音源：目前使用 YouTube"${spotifyConfigured() ? "" : " hidden"}>
+          <span class="venue-label">音源</span>
+          <span class="reading-value" id="audio-source-value">YouTube</span>
+        </button>
         <button class="venue-toggle pip-toggle" id="pip-btn" type="button" aria-pressed="false" aria-label="開啟或聚焦同步字幕小窗" title="開啟或聚焦同步字幕小窗"${documentPip.supported ? "" : " hidden"}>
           ${PIP_SVG}
           <span class="venue-label venue-label-desktop">PiP</span>
@@ -2176,6 +2206,13 @@ function buildSongShell(){
     });
     updateDocumentPipButton();
   }
+
+  document.getElementById("audio-source-btn").addEventListener("click", ()=>{
+    setAudioSource(audioSource === "spotify" ? "youtube" : "spotify");
+  });
+  document.getElementById("spotify-login").addEventListener("click", ()=>{
+    beginSpotifyLogin(location.hash);
+  });
 
   document.getElementById("playback-rate").addEventListener("change", event=>{
     setPlaybackRate(Number(event.currentTarget.value));
@@ -2591,8 +2628,7 @@ function renderSong(song){
   }
   document.getElementById("prev-song").title = `上一首：${prev.title}`;
   document.getElementById("next-song").title = `下一首：${next.title}`;
-  document.getElementById("watch-on-yt").href =
-    `https://www.youtube.com/watch?v=${encodeURIComponent(song.youtubeId)}`;
+  updateWatchLink();
 
   document.getElementById("lyrics-list").innerHTML = song.lyrics.map((l,i)=>`
     <li>
@@ -2647,8 +2683,9 @@ function renderSong(song){
   const scroller = songView.querySelector(".lyrics-scroll");
   if (scroller) scroller.scrollTop = 0;
 
+  updateAudioSourceUi();
   showVideoStatus();
-  loadYouTubeApi();
+  if (audioSource === "youtube") loadYouTubeApi();
   ensurePlayer();
   ensurePlaying(song.youtubeId);
   loadKaraokeTiming(song);
@@ -3431,7 +3468,7 @@ function togglePlayback(){
     try { return player.getPlayerState(); } catch(e){ return -1; }
   })();
   try {
-    if (state === YT.PlayerState.PLAYING || state === YT.PlayerState.BUFFERING) player.pauseVideo();
+    if (state === PLAYER_STATE.PLAYING || state === PLAYER_STATE.BUFFERING) player.pauseVideo();
     else player.playVideo();
   } catch(e){}
   updateDocumentPip();
@@ -4213,6 +4250,7 @@ let playerReady   = false;
 let videoStatusTimer = null;
 let currentVideoId = null;    // 플레이어에 올라가 있는 영상
 let pendingVideoId = null;    // 플레이어 준비 전에 눌린 곡
+let pendingStartSeconds = 0;  // 準備完成後要從影片的第幾秒開始
 let userVolume     = 100;     // 사용자가 마지막으로 맞춰 둔 볼륨(곡이 바뀌어도 유지)
 let userMuted      = false;   // 사용자가 직접 음소거해 뒀는지
 let volumeWatchTimer = null;
@@ -4273,7 +4311,8 @@ function applyPlaybackRate(){
   if (!player || !playerReady) return;
   refreshPlaybackRateOptions();
   playbackRate = closestAvailablePlaybackRate(playbackRate);
-  store(PLAYBACK_RATE_STORAGE_KEY, String(playbackRate));
+  // Spotify 只支援 x1；不要覆蓋使用者在 YouTube 選好的倍速。
+  if (audioSource === "youtube") store(PLAYBACK_RATE_STORAGE_KEY, String(playbackRate));
   updatePlaybackRateUi();
   applySongTempo(currentSong);
   playbackRateRestorePending = false;
@@ -4297,20 +4336,22 @@ function showVideoStatus(){
   const status = document.getElementById("video-status");
   if (!status) return;
   clearTimeout(videoStatusTimer);
-  status.hidden = playerReady;
-  if (playerReady) return;
+  status.hidden = playerReady || audioSource === "spotify";   // Spotify 的連線狀態顯示在音源面板
+  if (status.hidden) return;
   status.textContent = "正在載入影片…";
   videoStatusTimer = setTimeout(()=>{
-    if (!playerReady && status.isConnected) status.textContent = "影片連線延遲，請在下方開啟 YouTube。";
+    if (!playerReady && audioSource === "youtube" && status.isConnected) status.textContent = "影片連線延遲，請在下方開啟 YouTube。";
   }, 8000);
 }
 
 function ensurePlayer(){
-  if (player || !window.YT || !window.YT.Player) return;
+  if (audioSource === "spotify"){ ensureSpotifyPlayer(); return; }
+  if (youtubePlayer || !window.YT || !window.YT.Player) return;
   buildSongShell();                       // #yt-player 자리 확보
   if (!document.getElementById("yt-player")) return;
   currentVideoId = (currentSong || SONGS[0]).youtubeId;
-  player = new YT.Player('yt-player', {
+  // 事件只在 YouTube 是目前音源時處理；切到 Spotify 後仍保留播放器以便切回。
+  player = youtubePlayer = new YT.Player('yt-player', {
     videoId: currentVideoId,
     playerVars: {
       'rel': 0,
@@ -4319,12 +4360,139 @@ function ensurePlayer(){
       'autoplay': 0                       // 홈 화면에서 멋대로 소리 나지 않도록
     },
     events: {
-      'onReady': onPlayerReady,
-      'onStateChange': onPlayerStateChange,
-      'onPlaybackRateChange': onPlayerPlaybackRateChange,
-      'onError': onPlayerError
+      'onReady': event => { youtubeReady = true; if (player === youtubePlayer) onPlayerReady(event); },
+      'onStateChange': event => { if (player === youtubePlayer) onPlayerStateChange(event); },
+      'onPlaybackRateChange': event => { if (player === youtubePlayer) onPlayerPlaybackRateChange(event); },
+      'onError': event => { if (player === youtubePlayer) onPlayerError(event); }
     }
   });
+}
+
+function spotifyTrackFor(youtubeId){
+  const song = SONGS.find(item => item.youtubeId === youtubeId);
+  return song && SPOTIFY_TRACKS[song.id] ? { ...SPOTIFY_TRACKS[song.id] } : null;
+}
+
+function ensureSpotifyPlayer(){
+  buildSongShell();
+  if (spotifyPlayer){
+    player = spotifyPlayer;
+    return;
+  }
+  if (!hasSpotifySession()){
+    updateSpotifyPanel("login");
+    return;
+  }
+  updateSpotifyPanel("connecting");
+  spotifyPlayer = createSpotifyPlayer({
+    name: "HORO 台北場應援指南",
+    resolveTrack: spotifyTrackFor,
+    onReady: ()=>{ if (player === spotifyPlayer) onPlayerReady(); },
+    onStateChange: event => { if (player === spotifyPlayer) onPlayerStateChange(event); },
+    onTrack: info => {
+      spotifyTrackInfo = info;
+      if (player === spotifyPlayer) updateSpotifyPanel("playing");
+    },
+    onError: (message, kind) => {
+      if (kind === "auth" || kind === "browser" || kind === "account"){
+        // 播放器無法再使用：丟掉它，下次切到 Spotify（或重新登入後）再重建。
+        const failed = spotifyPlayer;
+        spotifyPlayer = null;
+        try { failed && failed.destroy(); } catch(e){}
+        if (player === failed){ player = null; playerReady = false; }
+      }
+      if (audioSource === "spotify") updateSpotifyPanel(kind === "auth" ? "login" : "error", message);
+    }
+  });
+  player = spotifyPlayer;
+}
+
+/* 音源切換時的影片框：Spotify 模式隱藏 YouTube，改顯示曲目資訊或登入按鈕。 */
+function updateSpotifyPanel(mode, message = ""){
+  const page = document.getElementById("song-page");
+  const panel = document.getElementById("spotify-panel");
+  if (!page || !panel) return;
+  const spotify = audioSource === "spotify";
+  page.classList.toggle("audio-spotify", spotify);
+  panel.hidden = !spotify;
+  if (!spotify) return;
+
+  const status = document.getElementById("video-status");
+  if (status){ clearTimeout(videoStatusTimer); status.hidden = true; }
+
+  const cover = document.getElementById("spotify-cover");
+  const title = document.getElementById("spotify-title");
+  const note = document.getElementById("spotify-note");
+  const login = document.getElementById("spotify-login");
+  const image = spotifyTrackInfo && spotifyTrackInfo.album && Array.isArray(spotifyTrackInfo.album.images)
+    ? spotifyTrackInfo.album.images[0] : null;
+  const showTrack = mode === "playing" && spotifyTrackInfo;
+  cover.hidden = !(showTrack && image);
+  if (showTrack && image) cover.src = image.url;
+  title.textContent = showTrack ? spotifyTrackInfo.name : "Spotify";
+  note.textContent = mode === "login" ? (message || "登入 Spotify Premium 帳號後，就能用 Spotify 播放並同步歌詞。")
+    : mode === "connecting" ? "正在連線 Spotify…"
+    : mode === "error" ? message
+    : "正在透過 Spotify 播放，歌詞依照 Spotify 進度同步。";
+  login.hidden = mode !== "login";
+}
+
+function updateAudioSourceUi(){
+  const button = document.getElementById("audio-source-btn");
+  if (button){
+    const label = audioSource === "spotify" ? "Spotify" : "YouTube";
+    button.classList.toggle("active", audioSource === "spotify");
+    button.setAttribute("aria-pressed", audioSource === "spotify" ? "true" : "false");
+    button.setAttribute("aria-label", `切換音源：目前使用 ${label}`);
+    const value = document.getElementById("audio-source-value");
+    if (value) value.textContent = label;
+  }
+  updateWatchLink();
+  updateSpotifyPanel(audioSource === "spotify"
+    ? (!hasSpotifySession() ? "login" : playerReady ? "playing" : "connecting")
+    : "");
+}
+
+function updateWatchLink(){
+  const link = document.getElementById("watch-on-yt");
+  if (!link || !currentSong) return;
+  const track = audioSource === "spotify" ? SPOTIFY_TRACKS[currentSong.id] : null;
+  link.href = track
+    ? `https://open.spotify.com/track/${encodeURIComponent(track.id)}`
+    : `https://www.youtube.com/watch?v=${encodeURIComponent(currentSong.youtubeId)}`;
+  link.textContent = track ? "在 Spotify 開啟 ↗" : "在 YouTube 觀看 ↗";
+}
+
+/* 切換音源時從同一句歌詞接著播：先記下影片時間軸上的位置，再交給新播放器。 */
+function setAudioSource(next){
+  if (next === audioSource || (next === "spotify" && !spotifyConfigured())) return;
+  const resumeAt = getPlayerTime();
+  try { if (player && playerReady) player.pauseVideo(); } catch(e){}
+  stopSyncTimer();
+
+  audioSource = next;
+  store(AUDIO_SOURCE_STORAGE_KEY, next);
+  currentVideoId = null;
+  if (next === "youtube"){
+    player = youtubePlayer;
+    playerReady = youtubeReady;
+    const storedRate = Number(store(PLAYBACK_RATE_STORAGE_KEY));
+    playbackRate = PLAYBACK_RATE_OPTIONS.includes(storedRate) ? storedRate : 1;
+  } else {
+    player = spotifyPlayer;
+    playerReady = Boolean(spotifyPlayer && spotifyPlayer.isReady());
+  }
+  availablePlaybackRates = [];
+  updatePlaybackRateUi();
+  applySongTempo(currentSong);
+  updateAudioSourceUi();
+  if (next === "youtube") loadYouTubeApi();
+  ensurePlayer();
+  showVideoStatus();
+  // 切換音源是明確的操作，直接從同一個位置用新音源播放。
+  if (currentSong && isSongViewActive()) playVideoFor(currentSong.youtubeId, resumeAt || 0);
+  updatePlayButton();
+  updateLyricsSync(true);
 }
 
 function onPlayerReady(){
@@ -4336,10 +4504,11 @@ function onPlayerReady(){
   applyPlaybackRate();
   startVolumeWatch();
   updatePlaybackProgress();
+  if (audioSource === "spotify") updateSpotifyPanel("playing");
   if (pendingVideoId && isSongViewActive()) { // 歌曲頁仍在前景才執行排隊播放
     const id = pendingVideoId;
     pendingVideoId = null;
-    playVideoFor(id);
+    playVideoFor(id, pendingStartSeconds);
   } else pendingVideoId = null;
   updateDocumentPip();
 }
@@ -4383,21 +4552,21 @@ function startVolumeWatch(){
 
 /* 지정한 영상을 즉시 재생. 볼륨은 사용자가 맞춰 둔 값을 그대로 유지한다.
    사용자 탭 핸들러 안에서 부르면 모바일에서도 소리가 그대로 난다. */
-function playVideoFor(videoId){
-  if (!player || !playerReady) { pendingVideoId = videoId; return; }
+function playVideoFor(videoId, startSeconds = 0){
+  if (!player || !playerReady) { pendingVideoId = videoId; pendingStartSeconds = startSeconds; return; }
   try {
     if (userMuted) player.mute();         // 사용자가 꺼 뒀으면 계속 꺼 둠
     else           player.unMute();
     player.setVolume(userVolume);         // 100 으로 되돌리지 않음
     if (currentVideoId === videoId) {
-      player.seekTo(0, true);
+      player.seekTo(startSeconds, true);
       player.playVideo();
     } else {
       currentVideoId = videoId;
       availablePlaybackRates = [];
       playbackRateRestorePending = true;
       updatePlaybackRateUi();
-      player.loadVideoById(videoId);      // loadVideoById 는 바로 재생까지 함
+      player.loadVideoById({ videoId, startSeconds });   // loadVideoById 는 바로 재생까지 함
     }
   } catch(e){}
 }
@@ -4405,11 +4574,11 @@ function playVideoFor(videoId){
 /* 이미 그 곡이 재생 중이면 건드리지 않고, 아니면 재생시킨다.
    (곡을 탭 → 이미 playVideoFor 가 돌았으므로 여기서 다시 끊기지 않게) */
 function ensurePlaying(videoId){
-  if (!player || !playerReady) { pendingVideoId = videoId; return; }
+  if (!player || !playerReady) { pendingVideoId = videoId; pendingStartSeconds = 0; return; }
   if (currentVideoId === videoId) {
     let st = -1;
     try { st = player.getPlayerState(); } catch(e){}
-    if (st === YT.PlayerState.PLAYING || st === YT.PlayerState.BUFFERING) return;
+    if (st === PLAYER_STATE.PLAYING || st === PLAYER_STATE.BUFFERING) return;
   }
   playVideoFor(videoId);
 }
@@ -4429,19 +4598,19 @@ function updatePlayButton(){
 function onPlayerStateChange(event) {
   updatePlayButton();
   updateDocumentPip();
-  if (event.data === YT.PlayerState.PLAYING || event.data === YT.PlayerState.CUED) {
+  if (event.data === PLAYER_STATE.PLAYING || event.data === PLAYER_STATE.CUED) {
     // loadVideoById 會把 YouTube 速度重設為 x1，換歌後在影片可播放時恢復選擇。
     applyPlaybackRate();
   }
   // 영상이 끝나면 다음 곡으로 (마지막 곡이면 첫 곡으로 되돌아감)
-  if (event.data === YT.PlayerState.ENDED) {
+  if (event.data === PLAYER_STATE.ENDED) {
     stopSyncTimer();
     goToNextSong();
     return;
   }
 
   // 재생 중(PLAYING = 1)일 때만 동기화 타이머 가동
-  if (event.data === YT.PlayerState.PLAYING) {
+  if (event.data === PLAYER_STATE.PLAYING) {
     startSyncTimer();
   } else {
     stopSyncTimer();
@@ -4820,3 +4989,14 @@ setupChangelogModal();
 
 router({ resetScroll: false });
 document.documentElement.removeAttribute("data-initial-route");
+
+// 從 Spotify 登入頁回來：換成 token 後回到登入前的頁面並改用 Spotify 播放。
+completeSpotifyLogin().then(result => {
+  if (!result) return;
+  if (result.ok){
+    audioSource = "spotify";
+    store(AUDIO_SOURCE_STORAGE_KEY, "spotify");
+  }
+  router({ resetScroll: false });
+  if (!result.ok) updateSpotifyPanel("login", "Spotify 登入沒有完成，請再試一次。");
+});

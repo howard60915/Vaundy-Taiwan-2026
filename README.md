@@ -86,6 +86,22 @@ GitHub Pages 使用 HTTPS 提供網站，因此離線快取功能可以直接運
 
 只查看歌名時，歌單順序會以打散後的形式顯示。若要切換回演出順序，請在確認畫面再次選擇「顯示順序」。從首頁或歌曲頁面重新進入歌單時，會再次從劇透警告畫面開始。
 
+### Spotify 音源（選用）
+
+設定 Spotify Client ID 後，歌曲頁控制列會出現「音源」按鈕，可以在 YouTube 與 Spotify 之間切換。切換後會從同一句歌詞接著播放，歌詞、卡拉 OK、只聽大合唱與 PiP 都會跟著 Spotify 的進度。這個功能使用 Spotify Web Playback SDK，需要 **Spotify Premium**，並且只支援桌面瀏覽器；Spotify 模式下倍速固定為 `x1`。
+
+1. 到 [Spotify Developer Dashboard](https://developer.spotify.com/dashboard) 建立 App，勾選 **Web API** 與 **Web Playback SDK**。
+2. 在 Redirect URIs 加入實際開啟網站的網址，本機開發請用 `http://127.0.0.1:5173/`（Spotify 不接受 `localhost`）。開發模式的 App 只允許在 **User Management** 加入的帳號登入。
+3. 在專案根目錄建立 `.env.local`（已被 git 忽略）：
+
+   ```bash
+   VITE_SPOTIFY_CLIENT_ID=你的 Client ID
+   ```
+
+4. 執行 `npx vite --host 127.0.0.1`，打開 `http://127.0.0.1:5173/`，進入歌曲頁後按「音源」並登入 Spotify。
+
+歌詞時間以 YouTube 影片為準；`src/spotify-tracks.js` 記錄每首歌對應的 Spotify 音軌與偏移（`影片秒數 = Spotify 秒數 + offset`）。若某首歌在 Spotify 模式下整體偏早或偏晚，調整該首的 `offset` 即可。沒有設定 Client ID 時，這個入口不會出現。
+
 ## 4. 修改內容後重新上傳
 
 修改歌詞或畫面並重新上傳時，請務必增加 **`sw.js` 頂端的 `CACHE_VERSION` 數字**，並讓 `src/main.js` 的 `BUILD` 同步更新。
