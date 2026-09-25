@@ -32,6 +32,9 @@ jobs:
 
       - name: Build
         run: npm run build
+        env:
+          # 選用：設定 repo 變數後才會出現 Spotify 音源；未設定時為空字串。
+          VITE_SPOTIFY_CLIENT_ID: ${{ vars.VITE_SPOTIFY_CLIENT_ID }}
 
       - name: Configure GitHub Pages
         uses: actions/configure-pages@v5
