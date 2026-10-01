@@ -15,6 +15,9 @@ import {
   BACK_SVG,
   TRACK_PREV_SVG,
   TRACK_NEXT_SVG,
+  SEEK_BACK_SVG,
+  SEEK_FWD_SVG,
+  VOLUME_SVG,
   PIP_SVG,
   CLOSE_SVG,
   SUN_SVG,
@@ -1946,12 +1949,42 @@ function buildSongShell(){
           <div class="video-wrap">
             <div class="video-frame">
               <div id="yt-player"></div>
-              <section class="spotify-panel" id="spotify-panel" aria-label="Spotify 音源" hidden>
+              <section class="spotify-panel" id="spotify-panel" aria-label="Spotify 播放" hidden>
                 <img class="spotify-cover" id="spotify-cover" alt="" hidden>
                 <span class="spotify-meta">
                   <strong class="spotify-title" id="spotify-title">Spotify</strong>
+                  <span class="spotify-sub" id="spotify-sub"></span>
+                  <span class="spotify-cue" id="spotify-cue" aria-live="polite" hidden>
+                    <span class="spotify-cue-now" id="spotify-cue-now"></span>
+                    <span class="spotify-cue-next" id="spotify-cue-next"></span>
+                  </span>
                   <span class="spotify-note" id="spotify-note" role="status" aria-live="polite"></span>
                   <button type="button" class="spotify-login" id="spotify-login" hidden>登入 Spotify</button>
+                  <span class="spotify-player" id="spotify-player" hidden>
+                    <span class="spotify-seek">
+                      <span class="spotify-time" id="spotify-time-now">0:00</span>
+                      <input type="range" id="spotify-seek" min="0" max="1000" step="1" value="0" aria-label="播放位置">
+                      <span class="spotify-time" id="spotify-time-total">0:00</span>
+                    </span>
+                    <span class="spotify-buttons">
+                      <button type="button" class="spotify-btn" id="spotify-prev" aria-label="上一首" title="上一首">${TRACK_PREV_SVG}</button>
+                      <button type="button" class="spotify-btn" id="spotify-back" aria-label="倒退 5 秒" title="倒退 5 秒（J）">${SEEK_BACK_SVG}</button>
+                      <button type="button" class="spotify-btn spotify-play" id="spotify-play" aria-label="播放" title="播放／暫停（空白鍵）">${PLAY_SVG}</button>
+                      <button type="button" class="spotify-btn" id="spotify-fwd" aria-label="快轉 5 秒" title="快轉 5 秒（L）">${SEEK_FWD_SVG}</button>
+                      <button type="button" class="spotify-btn" id="spotify-next" aria-label="下一首" title="下一首">${TRACK_NEXT_SVG}</button>
+                    </span>
+                    <span class="spotify-tools">
+                      <label class="spotify-volume" title="音量">
+                        ${VOLUME_SVG}
+                        <input type="range" id="spotify-volume" min="0" max="100" step="1" value="100" aria-label="音量">
+                      </label>
+                      <span class="spotify-sync" role="group" aria-label="歌詞同步微調">
+                        <button type="button" class="spotify-sync-btn" id="spotify-sync-later" aria-label="歌詞延後 0.1 秒" title="歌詞太早出現時按">−0.1</button>
+                        <button type="button" class="spotify-sync-value" id="spotify-sync-value" title="按一下重設" disabled>同步</button>
+                        <button type="button" class="spotify-sync-btn" id="spotify-sync-earlier" aria-label="歌詞提早 0.1 秒" title="歌詞太晚出現時按">+0.1</button>
+                      </span>
+                    </span>
+                  </span>
                 </span>
               </section>
               <details class="karaoke-source-popover" id="karaoke-source-popover">
@@ -2213,6 +2246,7 @@ function buildSongShell(){
   document.getElementById("spotify-login").addEventListener("click", ()=>{
     beginSpotifyLogin(location.hash);
   });
+  setupSpotifyCard();
 
   document.getElementById("playback-rate").addEventListener("change", event=>{
     setPlaybackRate(Number(event.currentTarget.value));
@@ -2282,6 +2316,17 @@ function buildSongShell(){
     }
     const tag = (e.target && e.target.tagName || "").toLowerCase();
     if (tag === "input" || tag === "textarea") return;
+    // 空白鍵播放／暫停；焦點在按鈕等元素上時保留瀏覽器原本的操作
+    if (e.key === " " && !["button", "select", "summary", "a"].includes(tag)){
+      e.preventDefault();
+      togglePlayback();
+      return;
+    }
+    if (!e.metaKey && !e.ctrlKey && !e.altKey){
+      const key = e.key.toLowerCase();
+      if (key === "j"){ e.preventDefault(); seekBy(-5); return; }
+      if (key === "l"){ e.preventDefault(); seekBy(5); return; }
+    }
     // 떼창만 듣기 중에는 구간 이동으로 (화면의 ‹ › 와 같은 동작)
     if (e.key === "ArrowLeft"){  e.preventDefault(); chantOnly ? skipPart(-1) : document.getElementById("prev-song").click(); }
     if (e.key === "ArrowRight"){ e.preventDefault(); chantOnly ? skipPart(1)  : document.getElementById("next-song").click(); }
@@ -2570,8 +2615,9 @@ function renderSong(song){
       const fullSong = songMap.get(song.id);
       if (fullSong) renderSong({ ...song, ...fullSong });
       else showSongLyricsLoadIssue(renderToken, "找不到這首歌的歌詞資料，請重新載入頁面。");
-    }).catch(() => {
+    }).catch(error => {
       window.clearTimeout(lyricsLoadTimer);
+      console.error("[song] 歌曲頁載入失敗", error);   // 第二次 render 的錯誤不會顯示在畫面上，至少留在主控台
       showSongLyricsLoadIssue(renderToken, "歌詞載入失敗，請檢查網路連線後重新載入。");
     });
     return;
@@ -2873,6 +2919,7 @@ function leaveSongView(){
   }
   if (songShellBuilt) songView.classList.add("offstage");
   songView.inert = true;
+  updateMediaSession();                  // 離開歌曲頁後交還系統媒體控制
   app.style.display = "";
 }
 
@@ -3414,6 +3461,7 @@ function formatPlaybackTime(seconds){
 }
 
 function updatePlaybackProgress(){
+  updateSpotifyCard();
   const progress = document.getElementById("song-playback-progress");
   const fill = document.getElementById("song-playback-progress-fill");
   if (!progress || !fill) return;
@@ -4370,7 +4418,8 @@ function ensurePlayer(){
 
 function spotifyTrackFor(youtubeId){
   const song = SONGS.find(item => item.youtubeId === youtubeId);
-  return song && SPOTIFY_TRACKS[song.id] ? { ...SPOTIFY_TRACKS[song.id] } : null;
+  const track = song && SPOTIFY_TRACKS[song.id];
+  return track ? { ...track, offset: track.offset + spotifySyncAdjustment(song.id) } : null;
 }
 
 function ensureSpotifyPlayer(){
@@ -4386,12 +4435,17 @@ function ensureSpotifyPlayer(){
   updateSpotifyPanel("connecting");
   spotifyPlayer = createSpotifyPlayer({
     name: "HORO 台北場應援指南",
+    volume: spotifyVolume,
     resolveTrack: spotifyTrackFor,
     onReady: ()=>{ if (player === spotifyPlayer) onPlayerReady(); },
     onStateChange: event => { if (player === spotifyPlayer) onPlayerStateChange(event); },
     onTrack: info => {
+      const changed = !spotifyTrackInfo || spotifyTrackInfo.id !== info.id;
       spotifyTrackInfo = info;
-      if (player === spotifyPlayer) updateSpotifyPanel("playing");
+      if (player === spotifyPlayer && changed){
+        updateSpotifyPanel("playing");
+        updateMediaSession();
+      }
     },
     onError: (message, kind) => {
       if (kind === "auth" || kind === "browser" || kind === "account"){
@@ -4405,9 +4459,10 @@ function ensureSpotifyPlayer(){
     }
   });
   player = spotifyPlayer;
+  if (DEBUG) window.__spotifyDebug = () => spotifyPlayer ? spotifyPlayer.debugState() : null;
 }
 
-/* 音源切換時的影片框：Spotify 模式隱藏 YouTube，改顯示曲目資訊或登入按鈕。 */
+/* 音源切換時的影片框：Spotify 模式隱藏 YouTube，改顯示播放卡或登入按鈕。 */
 function updateSpotifyPanel(mode, message = ""){
   const page = document.getElementById("song-page");
   const panel = document.getElementById("spotify-panel");
@@ -4420,21 +4475,287 @@ function updateSpotifyPanel(mode, message = ""){
   const status = document.getElementById("video-status");
   if (status){ clearTimeout(videoStatusTimer); status.hidden = true; }
 
+  const playing = mode === "playing";
   const cover = document.getElementById("spotify-cover");
-  const title = document.getElementById("spotify-title");
-  const note = document.getElementById("spotify-note");
-  const login = document.getElementById("spotify-login");
   const image = spotifyTrackInfo && spotifyTrackInfo.album && Array.isArray(spotifyTrackInfo.album.images)
     ? spotifyTrackInfo.album.images[0] : null;
-  const showTrack = mode === "playing" && spotifyTrackInfo;
-  cover.hidden = !(showTrack && image);
-  if (showTrack && image) cover.src = image.url;
-  title.textContent = showTrack ? spotifyTrackInfo.name : "Spotify";
+  cover.hidden = !(playing && image);
+  if (playing && image && cover.getAttribute("src") !== image.url) cover.src = image.url;
+
+  const title = document.getElementById("spotify-title");
+  if (playing && currentSong) title.innerHTML = renderSongTitle(currentSong.title);
+  else title.textContent = "Spotify";
+  const album = playing && spotifyTrackInfo && spotifyTrackInfo.album ? spotifyTrackInfo.album.name : "";
+  document.getElementById("spotify-sub").textContent = playing ? ["Vaundy", album].filter(Boolean).join(" · ") : "";
+
+  const note = document.getElementById("spotify-note");
   note.textContent = mode === "login" ? (message || "登入 Spotify Premium 帳號後，就能用 Spotify 播放並同步歌詞。")
     : mode === "connecting" ? "正在連線 Spotify…"
     : mode === "error" ? message
-    : "正在透過 Spotify 播放，歌詞依照 Spotify 進度同步。";
-  login.hidden = mode !== "login";
+    : "";
+  note.hidden = !note.textContent;
+  document.getElementById("spotify-login").hidden = mode !== "login";
+  document.getElementById("spotify-player").hidden = !playing;
+  document.getElementById("spotify-cue").hidden = !playing;
+  if (playing){
+    updateSpotifySyncUi();
+    updateSpotifyCard();
+  }
+}
+
+/* ── Spotify 播放卡 ─────────────────────────────────────────
+   時間與拖曳進度用 Spotify 音軌本身的秒數（和 Spotify App 一致），
+   歌詞與應援提示仍以影片時間軸判斷。 */
+const SPOTIFY_VOLUME_KEY = "horo-spotify-volume";
+const SPOTIFY_SYNC_KEY = "horo-spotify-sync";
+const storedSpotifyVolume = Number(store(SPOTIFY_VOLUME_KEY));
+let spotifyVolume = store(SPOTIFY_VOLUME_KEY) !== null && Number.isFinite(storedSpotifyVolume)
+  ? Math.max(0, Math.min(100, storedSpotifyVolume))
+  : 100;
+let spotifySeeking = false;
+const CUE_NEXT_WINDOW_SEC = 20;    // 超過這個秒數才會出現的應援，先不預告
+const CUE_TYPES = Object.freeze([
+  { key: "chant", icon: "mic",  label: "大合唱" },
+  { key: "clap",  icon: "clap", label: "拍手" },
+  { key: "wave",  icon: "wave", label: "揮手" },
+  { key: "jump",  icon: "jump", label: "跳躍" },
+  { key: "spin",  icon: "spin", label: "轉臂" }
+]);
+
+function spotifySyncAdjustments(){
+  try {
+    const value = JSON.parse(store(SPOTIFY_SYNC_KEY) || "{}");
+    return value && typeof value === "object" ? value : {};
+  } catch(e){ return {}; }
+}
+
+function spotifySyncAdjustment(songId){
+  const value = Number(spotifySyncAdjustments()[songId]);
+  return Number.isFinite(value) ? value : 0;
+}
+
+function setSpotifySyncAdjustment(songId, value){
+  const all = spotifySyncAdjustments();
+  const rounded = Math.round(value * 10) / 10;
+  if (Math.abs(rounded) < 0.05) delete all[songId];
+  else all[songId] = rounded;
+  store(SPOTIFY_SYNC_KEY, JSON.stringify(all));
+  return Math.abs(rounded) < 0.05 ? 0 : rounded;
+}
+
+/* offset 越大，同一個 Spotify 位置對應到越後面的歌詞，也就是歌詞「提早」出現。 */
+function nudgeSpotifySync(delta){
+  if (!currentSong || !SPOTIFY_TRACKS[currentSong.id]) return;
+  const next = delta === null ? setSpotifySyncAdjustment(currentSong.id, 0)
+    : setSpotifySyncAdjustment(currentSong.id, spotifySyncAdjustment(currentSong.id) + delta);
+  if (spotifyPlayer) spotifyPlayer.setOffset(SPOTIFY_TRACKS[currentSong.id].offset + next);
+  updateSpotifySyncUi();
+  updateLyricsSync(true);
+}
+
+function updateSpotifySyncUi(){
+  const value = document.getElementById("spotify-sync-value");
+  if (!value || !currentSong) return;
+  const adjust = spotifySyncAdjustment(currentSong.id);
+  value.textContent = adjust > 0 ? `提早 ${adjust.toFixed(1)} 秒`
+    : adjust < 0 ? `延後 ${(-adjust).toFixed(1)} 秒`
+    : "同步";
+  value.disabled = adjust === 0;
+  value.setAttribute("aria-label", adjust === 0 ? "歌詞同步未調整" : `歌詞${value.textContent}，按一下重設`);
+}
+
+function lineCueKeys(line, song = currentSong){
+  const found = new Set();
+  if (!line) return found;
+  if (lineIsChant(line, song)) found.add("chant");
+  const scan = part => {
+    if (typeof part === "string"){
+      ["clap", "wave", "jump", "spin", "turn"].forEach(name => {
+        if (hasIconToken(part, name)) found.add(name === "turn" ? "spin" : name);
+      });
+      return;
+    }
+    if (!Array.isArray(part)) return;
+    part.forEach(segment => {
+      if (!segment) return;
+      if (typeof segment === "string"){ scan(segment); return; }
+      if (segment.tag === "clap") found.add("clap");
+      scan(segment.text);
+    });
+  };
+  scan(line.jpSegments || line.jp);
+  scan(line.trSegments || line.tr);
+  return found;
+}
+
+function cueItemsHtml(keys){
+  return CUE_TYPES.filter(type => keys.has(type.key))
+    .map(type => `<span class="spotify-cue-item cue-${type.key}">${INLINE_ICONS[type.icon]}<span>${type.label}</span></span>`)
+    .join("");
+}
+
+/* 「現在要做什麼」：目前這句的應援，加上 20 秒內下一個不同的應援。 */
+function updateSpotifyCue(activeIdx, videoTime){
+  const now = document.getElementById("spotify-cue-now");
+  const next = document.getElementById("spotify-cue-next");
+  if (!now || !next || !currentSong || !Array.isArray(currentSong.lyrics)) return;
+  const lines = currentSong.lyrics;
+  const currentKeys = activeIdx >= 0 ? lineCueKeys(lines[activeIdx]) : new Set();
+  const nowHtml = currentKeys.size ? cueItemsHtml(currentKeys) : `<span class="spotify-cue-idle">目前沒有應援動作</span>`;
+  if (now.dataset.html !== nowHtml){ now.innerHTML = nowHtml; now.dataset.html = nowHtml; }
+
+  let upcoming = "";
+  if (Number.isFinite(videoTime)){
+    const signature = [...currentKeys].sort().join();
+    for (let i = Math.max(0, activeIdx + 1); i < lines.length; i++){
+      const wait = Number(lines[i].time) - videoTime;
+      if (!(wait > 0)) continue;
+      if (wait > CUE_NEXT_WINDOW_SEC) break;
+      const keys = lineCueKeys(lines[i]);
+      if (!keys.size || [...keys].sort().join() === signature) continue;
+      const labels = CUE_TYPES.filter(type => keys.has(type.key)).map(type => type.label).join("、");
+      upcoming = `接下來：${labels}（${Math.ceil(wait)} 秒後）`;
+      break;
+    }
+  }
+  if (next.textContent !== upcoming) next.textContent = upcoming;
+}
+
+function updateSpotifyCard(){
+  if (audioSource !== "spotify" || !spotifyPlayer || player !== spotifyPlayer) return;
+  const panel = document.getElementById("spotify-player");
+  if (!panel || panel.hidden) return;
+  const duration = spotifyPlayer.getTrackDuration();
+  const position = spotifyPlayer.getTrackPosition();
+  const seek = document.getElementById("spotify-seek");
+  if (!spotifySeeking){
+    seek.value = duration ? String(Math.round(position / duration * 1000)) : "0";
+    document.getElementById("spotify-time-now").textContent = formatPlaybackTime(position);
+  }
+  document.getElementById("spotify-time-total").textContent = formatPlaybackTime(duration);
+  seek.setAttribute("aria-valuetext", `${formatPlaybackTime(position)} / ${formatPlaybackTime(duration)}`);
+
+  const play = document.getElementById("spotify-play");
+  const playing = playerIsPlaying();
+  if (play.dataset.playing !== String(playing)){
+    play.dataset.playing = String(playing);
+    play.innerHTML = playing ? PAUSE_SVG : PLAY_SVG;
+    play.setAttribute("aria-label", playing ? "暫停" : "播放");
+  }
+  updateSpotifyCue(lastActiveIdx, getPlayerTime());
+}
+
+function setupSpotifyCard(){
+  const seek = document.getElementById("spotify-seek");
+  seek.addEventListener("input", ()=>{
+    spotifySeeking = true;
+    const duration = spotifyPlayer ? spotifyPlayer.getTrackDuration() : 0;
+    document.getElementById("spotify-time-now").textContent = formatPlaybackTime(Number(seek.value) / 1000 * duration);
+  });
+  seek.addEventListener("change", ()=>{
+    spotifySeeking = false;
+    if (!spotifyPlayer) return;
+    const seconds = Number(seek.value) / 1000 * spotifyPlayer.getTrackDuration();
+    spotifyPlayer.seekTrack(seconds);
+    if (chantOnly){ chantDone = false; chantExpect(getPlayerTime()); }
+    updateLyricsSync(true);
+  });
+  document.getElementById("spotify-prev").addEventListener("click", ()=>goNeighbor(-1));
+  document.getElementById("spotify-next").addEventListener("click", ()=>goNeighbor(1));
+  document.getElementById("spotify-back").addEventListener("click", ()=>seekBy(-5));
+  document.getElementById("spotify-fwd").addEventListener("click", ()=>seekBy(5));
+  document.getElementById("spotify-play").addEventListener("click", togglePlayback);
+
+  const volume = document.getElementById("spotify-volume");
+  volume.value = String(spotifyVolume);
+  volume.addEventListener("input", ()=>{
+    spotifyVolume = Number(volume.value);
+    store(SPOTIFY_VOLUME_KEY, String(spotifyVolume));
+    if (spotifyPlayer) spotifyPlayer.setVolume(spotifyVolume);
+  });
+
+  document.getElementById("spotify-sync-earlier").addEventListener("click", ()=>nudgeSpotifySync(0.1));
+  document.getElementById("spotify-sync-later").addEventListener("click", ()=>nudgeSpotifySync(-0.1));
+  document.getElementById("spotify-sync-value").addEventListener("click", ()=>nudgeSpotifySync(null));
+}
+
+/* 快進／倒退：J、L 鍵、播放卡按鈕與系統媒體鍵共用。 */
+function seekBy(delta){
+  const time = getPlayerTime();
+  if (!player || !playerReady || time === null) return;
+  const target = Math.max(0, time + delta);
+  try { player.seekTo(target, true); } catch(e){}
+  if (chantOnly){ chantDone = false; chantExpect(target); }
+  updateLyricsSync(true);
+}
+
+/* ── 系統媒體整合（Media Session）───────────────────────────
+   讓媒體鍵、macOS 控制中心與 Chrome 媒體面板能控制 Spotify 播放。
+   YouTube 模式交給 YouTube 播放器自己的媒體資訊，這裡不接手。 */
+const MEDIA_SESSION_ACTIONS = ["play", "pause", "previoustrack", "nexttrack", "seekbackward", "seekforward", "seekto"];
+let mediaSessionOwned = false;
+let mediaSessionKey = "";
+
+function updateMediaSession(){
+  if (!("mediaSession" in navigator)) return;
+  const session = navigator.mediaSession;
+  const active = audioSource === "spotify" && spotifyPlayer && player === spotifyPlayer
+    && currentSong && isSongViewActive();
+  if (!active){
+    if (mediaSessionOwned){
+      session.metadata = null;
+      MEDIA_SESSION_ACTIONS.forEach(action => { try { session.setActionHandler(action, null); } catch(e){} });
+      mediaSessionOwned = false;
+      mediaSessionKey = "";
+    }
+    return;
+  }
+  const images = spotifyTrackInfo && spotifyTrackInfo.album && Array.isArray(spotifyTrackInfo.album.images)
+    ? spotifyTrackInfo.album.images : [];
+  const key = `${currentSong.id}:${spotifyTrackInfo ? spotifyTrackInfo.id : ""}`;
+  if (key !== mediaSessionKey && typeof window.MediaMetadata === "function"){
+    mediaSessionKey = key;
+    session.metadata = new MediaMetadata({
+      title: currentSong.title,
+      artist: "Vaundy",
+      album: spotifyTrackInfo && spotifyTrackInfo.album ? spotifyTrackInfo.album.name : "",
+      artwork: images.map(image => ({
+        src: image.url,
+        ...(image.width && image.height ? { sizes: `${image.width}x${image.height}` } : {}),
+        type: "image/jpeg"
+      }))
+    });
+  }
+  if (!mediaSessionOwned){
+    const handlers = {
+      play: ()=>{ if (!playerIsPlaying()) togglePlayback(); },
+      pause: ()=>{ if (playerIsPlaying()) togglePlayback(); },
+      previoustrack: ()=>goNeighbor(-1),
+      nexttrack: ()=>goNeighbor(1),
+      seekbackward: details => seekBy(-((details && details.seekOffset) || 5)),
+      seekforward: details => seekBy((details && details.seekOffset) || 5),
+      seekto: details => {
+        if (!spotifyPlayer || !details || !Number.isFinite(details.seekTime)) return;
+        spotifyPlayer.seekTrack(details.seekTime);
+        updateLyricsSync(true);
+      }
+    };
+    Object.entries(handlers).forEach(([action, handler]) => {
+      try { session.setActionHandler(action, handler); } catch(e){}
+    });
+    mediaSessionOwned = true;
+  }
+  session.playbackState = playerIsPlaying() ? "playing" : "paused";
+  const duration = spotifyPlayer.getTrackDuration();
+  if (duration > 0 && typeof session.setPositionState === "function"){
+    try {
+      session.setPositionState({
+        duration,
+        position: Math.min(duration, spotifyPlayer.getTrackPosition()),
+        playbackRate: 1
+      });
+    } catch(e){}
+  }
 }
 
 function updateAudioSourceUi(){
@@ -4455,6 +4776,7 @@ function updateAudioSourceUi(){
   updateSpotifyPanel(audioSource === "spotify"
     ? (!hasSpotifySession() ? "login" : playerReady ? "playing" : "connecting")
     : "");
+  updateMediaSession();
 }
 
 function updateWatchLink(){
@@ -4504,7 +4826,10 @@ function onPlayerReady(){
   clearTimeout(videoStatusTimer);
   const status = document.getElementById("video-status");
   if (status) status.hidden = true;
-  try { player.unMute(); player.setVolume(userVolume); } catch(e){}
+  try {
+    player.unMute();
+    player.setVolume(player === spotifyPlayer ? spotifyVolume : userVolume);
+  } catch(e){}
   applyPlaybackRate();
   startVolumeWatch();
   updatePlaybackProgress();
@@ -4544,7 +4869,7 @@ function onPlayerPlaybackRateChange(event){
 function startVolumeWatch(){
   if (volumeWatchTimer) return;
   volumeWatchTimer = setInterval(()=>{
-    if (!player || !playerReady) return;
+    if (!player || !playerReady || player !== youtubePlayer) return;   // 只記 YouTube 的音量
     try {
       const v = player.getVolume();
       const m = player.isMuted();
@@ -4559,9 +4884,9 @@ function startVolumeWatch(){
 function playVideoFor(videoId, startSeconds = 0){
   if (!player || !playerReady) { pendingVideoId = videoId; pendingStartSeconds = startSeconds; return; }
   try {
-    if (userMuted) player.mute();         // 사용자가 꺼 뒀으면 계속 꺼 둠
+    if (userMuted && player === youtubePlayer) player.mute();   // 사용자가 꺼 뒀으면 계속 꺼 둠
     else           player.unMute();
-    player.setVolume(userVolume);         // 100 으로 되돌리지 않음
+    player.setVolume(player === spotifyPlayer ? spotifyVolume : userVolume);   // 100 으로 되돌리지 않음
     if (currentVideoId === videoId) {
       player.seekTo(startSeconds, true);
       player.playVideo();
@@ -4602,6 +4927,7 @@ function updatePlayButton(){
 function onPlayerStateChange(event) {
   updatePlayButton();
   updateDocumentPip();
+  updateMediaSession();
   if (event.data === PLAYER_STATE.PLAYING || event.data === PLAYER_STATE.CUED) {
     // loadVideoById 會把 YouTube 速度重設為 x1，換歌後在影片可播放時恢復選擇。
     applyPlaybackRate();

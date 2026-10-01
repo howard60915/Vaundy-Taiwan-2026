@@ -186,21 +186,33 @@ export function createSpotifyPlayer(options){
   let loadedOnDevice = false;   // 目前曲目是否已送到這個播放裝置
   let snap = { position: 0, duration: 0, paused: true, loading: false, at: performance.now() };
   let stateCode = -1;
-  let volume = 100;
+  let volume = Number.isFinite(Number(options.volume)) ? Math.max(0, Math.min(100, Number(options.volume))) : 100;
   let muted = false;
   let pollTimer = null;
   let pendingSeek = null;       // 送出 seek 後，SDK 回報新位置前先沿用目標位置
+  let lastRawPosition = null;   // 上一次 SDK 回報的位置，用來判斷是否真的卡在緩衝
 
   const adapter = {
     isReady: () => ready,
     trackUrl: () => track ? `https://open.spotify.com/track/${track.id}` : "",
 
     getCurrentTime(){
+      return track ? adapter.getTrackPosition() + track.offset : 0;
+    },
+    /* Spotify 音軌本身的秒數（不含 offset），給播放卡的時間與拖曳進度用。 */
+    getTrackPosition(){
       if (!track) return 0;
       const moving = !snap.paused && !snap.loading;
-      let position = snap.position + (moving ? (performance.now() - snap.at) / 1000 : 0);
-      if (snap.duration) position = Math.min(position, snap.duration);
-      return position + track.offset;
+      const position = snap.position + (moving ? (performance.now() - snap.at) / 1000 : 0);
+      return snap.duration ? Math.min(position, snap.duration) : position;
+    },
+    getTrackDuration: () => track ? snap.duration : 0,
+    seekTrack(seconds){
+      if (track) adapter.seekTo(Number(seconds) + track.offset);
+    },
+    /* 使用者微調同步時即時換算，不需要重新載入音軌。 */
+    setOffset(offset){
+      if (track && Number.isFinite(Number(offset))) track.offset = Number(offset);
     },
     getDuration(){
       return track && snap.duration ? snap.duration + track.offset : 0;
@@ -211,10 +223,10 @@ export function createSpotifyPlayer(options){
       if (!sdk || !track) return;
       activate();
       if (!loadedOnDevice){ if (!track.request) start(track, snap.position); }
-      else sdk.resume().catch(() => {});
+      else sdk.resume().catch(() => {}).then(() => ensurePlaybackState(false));
     },
     pauseVideo(){
-      if (sdk && loadedOnDevice) sdk.pause().catch(() => {});
+      if (sdk && loadedOnDevice) sdk.pause().catch(() => {}).then(() => ensurePlaybackState(true));
     },
     seekTo(videoSeconds){
       if (!track) return;
@@ -252,6 +264,22 @@ export function createSpotifyPlayer(options){
     getAvailablePlaybackRates: () => [1],
     setPlaybackRate(){},
 
+    /* 只在 ?debug=1 時由主程式掛到 window，方便檢查 SDK 實際回報的狀態。 */
+    async debugState(){
+      const raw = sdk ? await sdk.getCurrentState().catch(error => ({ error: String(error) })) : null;
+      return {
+        ready, deviceId, loadedOnDevice, stateCode, snap: { ...snap },
+        track: track && { id: track.id, offset: track.offset, seen: track.seen, ended: track.ended },
+        raw: raw && (raw.error ? raw : {
+          paused: raw.paused, loading: raw.loading, position: raw.position, duration: raw.duration,
+          current: raw.track_window && raw.track_window.current_track && {
+            id: raw.track_window.current_track.id,
+            linked_from: raw.track_window.current_track.linked_from
+          }
+        })
+      };
+    },
+
     destroy(){
       stopPolling();
       if (sdk) sdk.disconnect();
@@ -259,6 +287,25 @@ export function createSpotifyPlayer(options){
       ready = false;
     }
   };
+
+  /* SDK 卡在 loading 狀態時，本機的 pause()／resume() 可能被忽略；
+     一秒後仍不是想要的狀態，就改用 Web API 對這個裝置下指令。 */
+  function ensurePlaybackState(wantPaused){
+    const target = track;
+    setTimeout(async () => {
+      if (!sdk || !deviceId || track !== target) return;
+      const state = await sdk.getCurrentState().catch(() => null);
+      if (!state || state.paused === wantPaused) return;
+      const token = await getAccessToken();
+      if (!token || track !== target) return;
+      await fetch(`${API}/me/player/${wantPaused ? "pause" : "play"}?device_id=${encodeURIComponent(deviceId)}`, {
+        method: "PUT",
+        headers: { Authorization: `Bearer ${token}` }
+      }).catch(() => {});
+      const fresh = await sdk.getCurrentState().catch(() => null);
+      if (fresh) handleState(fresh);
+    }, 1000);
+  }
 
   function activate(){
     // 瀏覽器的自動播放限制：在使用者操作當下喚醒 SDK 的音訊元素。
@@ -285,6 +332,7 @@ export function createSpotifyPlayer(options){
     target.request = request;             // 同一首連續要求時，只有最後一次有效
     target.seen = false;
     target.ended = false;
+    lastRawPosition = null;
     try {
       await sendPlay(target, request);
     } finally {
@@ -314,6 +362,10 @@ export function createSpotifyPlayer(options){
       if (response && response.ok){
         loadedOnDevice = true;
         applyVolume();
+        // 狀態通知可能比這個回應更早到而被略過；主動再讀一次。
+        setTimeout(() => {
+          if (sdk && track === target) sdk.getCurrentState().then(state => { if (state) handleState(state); }).catch(() => {});
+        }, 300);
         return;
       }
       const status = response ? response.status : 0;
@@ -337,6 +389,7 @@ export function createSpotifyPlayer(options){
     if (!track) return;
     const current = state.track_window && state.track_window.current_track;
     const previous = state.track_window && state.track_window.previous_tracks || [];
+    // Spotify 可能改播同錄音的另一個版本，此時會在 linked_from 附上原本要求的 ID。
     const isOurs = item => Boolean(item && (item.id === track.id
       || (item.linked_from && item.linked_from.id === track.id)));
     if (!track.seen){
@@ -351,16 +404,23 @@ export function createSpotifyPlayer(options){
       && (previous.some(isOurs) || snap.duration - snap.position < 2);
     const switchedAway = Boolean(current && current.id) && !isOurs(current);
 
+    /* SDK 的 loading 旗標有時在播放中一直維持 true（例如被換成同錄音的
+       另一個版本時），但 position 仍持續前進。只有 loading 且位置沒動，
+       才當成真的在緩衝。 */
+    const stalled = state.loading && !state.paused
+      && (lastRawPosition === null || Math.abs(position - lastRawPosition) < 0.05);
+    lastRawPosition = position;
+
     if (pendingSeek && performance.now() < pendingSeek.until && Math.abs(position - pendingSeek.seconds) > 1.5){
       // SDK 還在回報 seek 前的位置，暫時不要覆蓋目標位置。
-      setSnap({ paused: state.paused, loading: state.loading, duration: state.duration / 1000 });
+      setSnap({ paused: state.paused, loading: stalled, duration: state.duration / 1000 });
     } else {
       pendingSeek = null;
       setSnap({
         position,
         duration: state.duration / 1000,
         paused: state.paused,
-        loading: state.loading,
+        loading: stalled,
         at: performance.now()
       });
     }
@@ -375,9 +435,11 @@ export function createSpotifyPlayer(options){
       emit(STATE.ENDED);
       return;
     }
-    if (state.loading) emit(STATE.BUFFERING);
-    else if (state.paused){ stopPolling(); emit(STATE.PAUSED); }
-    else { startPolling(); emit(STATE.PLAYING); }
+    if (state.paused){ stopPolling(); emit(STATE.PAUSED); }
+    else {
+      startPolling();              // 緩衝中也要輪詢，才看得到位置開始前進
+      emit(stalled ? STATE.BUFFERING : STATE.PLAYING);
+    }
   }
 
   /* SDK 只在狀態改變時通知；播放中每秒讀一次實際位置，修正內插誤差。 */
