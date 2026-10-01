@@ -2,7 +2,7 @@
 
 本檔案依 Git 歷史整理，使用版本提交作為每一段的邊界。
 
-## **v1.12.0**
+## [**v1.12.0**](https://github.com/howard60915/Vaundy-Taiwan-2026/commit/f379b0924c43f3bd8a3e8df334ee612e500eb531)
 
 - [PR #1](https://github.com/howard60915/Vaundy-Taiwan-2026/pull/1)：新增 Spotify 音源（需要 Spotify Premium，僅支援桌面瀏覽器）。歌曲頁的「音源」按鈕可在 YouTube 與 Spotify 之間切換並從同一句歌詞接著播放，歌詞、卡拉 OK、只聽大合唱與 PiP 依 Spotify 進度同步；未設定 Spotify Client ID 時不顯示此功能。
 - [commit c9ce491](https://github.com/howard60915/Vaundy-Taiwan-2026/commit/c9ce49164d428b455ff297eb0bb94a8ae7c9c4c6)：Spotify 模式改用大封面播放卡，集中顯示進度、播放控制與「目前／接下來」的應援動作提示；新增每首歌 ±0.1 秒的歌詞同步微調、音量滑桿、空白鍵與 J／L 快捷鍵，以及系統媒體鍵與媒體面板控制。
